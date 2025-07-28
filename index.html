@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | CMMS</title>
+  <title>Login | Secure Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -144,17 +144,17 @@
       height: 48px;
     }
     
-    .forgot-password {
+    .account-help {
       display: block;
-      text-align: right;
-      margin-top: 8px;
+      text-align: center;
+      margin-top: 16px;
       font-size: 13px;
       color: var(--text-light);
       text-decoration: none;
       transition: var(--transition);
     }
     
-    .forgot-password:hover {
+    .account-help:hover {
       color: var(--primary-color);
     }
     
@@ -172,18 +172,6 @@
     
     @keyframes spin {
       to { transform: rotate(360deg); }
-    }
-    
-    .footer-text {
-      margin-top: 24px;
-      font-size: 13px;
-      color: var(--text-light);
-    }
-    
-    .footer-text a {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: 500;
     }
   </style>
 </head>
@@ -206,7 +194,6 @@
       <div class="form-group">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" required placeholder="••••••••">
-        <a href="#" class="forgot-password">Forgot password?</a>
       </div>
       
       <button type="submit">
@@ -216,7 +203,7 @@
 
     <p id="status"></p>
     
-    <p class="footer-text">Don't have an account? <a href="#">Sign up</a></p>
+    <a href="#" class="account-help">Need help with your account? Contact administrator</a>
   </div>
 
   <script>
