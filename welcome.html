@@ -1,10 +1,396 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Welcome</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Maintenance Dashboard</title>
+    <style>
+        :root {
+            --primary: #2b6cb0;
+            --primary-dark: #2c5282;
+            --secondary: #e53e3e;
+            --accent1: #38a169;
+            --accent2: #d69e2e;
+            --accent3: #805ad5;
+            --light: #f7fafc;
+            --dark: #1a202c;
+            --gray: #4a5568;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .options-sidebar {
+            width: 280px;
+            background: white;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e2e8f0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+            height: 100vh;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+        
+        .welcome-text {
+            font-size: 1rem;
+            color: var(--gray);
+            max-width: 1000px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .sidebar-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-header h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .options-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        
+        .option-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .option-btn {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid #e2e8f0;
+            color: var(--gray);
+        }
+        
+        /* Button colors remain the same as previous version */
+        
+        .dashboard-container {
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .status-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid;
+            text-align: left;
+        }
+        
+        .summary-card h3 {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .summary-card .change {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+        
+        .operational { border-color: var(--accent1); }
+        .active { border-color: var(--primary); }
+        .maintenance { border-color: var(--accent2); }
+        .out-of-service { border-color: var(--secondary); }
+        
+        .trainset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .trainset-card {
+            background: white;
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .trainset-id {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .trainset-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .status-operational { background: #ebf8f2; color: var(--accent1); }
+        .status-active { background: #ebf4ff; color: var(--primary); }
+        .status-maintenance { background: #fffaf0; color: var(--accent2); }
+        .status-out-of-service { background: #fff5f5; color: var(--secondary); }
+        
+        .last-updated {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .trainset-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .options-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .main-content {
+                padding: 1rem;
+                height: auto;
+            }
+            
+            .status-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <h1>Welcome!</h1>
-  <p>You have successfully logged in.</p>
+    <div class="options-sidebar">
+        <div class="sidebar-header">
+            <h2>Railway Maintenance</h2>
+        </div>
+        <ul class="options-list">
+            <li class="option-item">
+                <a href="mileage-status.html" class="option-btn mileage">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Mileage Status</span>
+                </a>
+            </li>
+            <li class="option-item">
+                <a href="wheelsets-condition.html" class="option-btn wheelsets">
+                    <i class="fas fa-cog"></i>
+                    <span>Wheelsets Condition</span>
+                </a>
+            </li>
+            <li class="option-item">
+                <a href="traction-aps-status.html" class="option-btn traction">
+                    <i class="fas fa-bolt"></i>
+                    <span>Traction & APS</span>
+                </a>
+            </li>
+            <li class="option-item">
+                <a href="brake-status.html" class="option-btn brake">
+                    <i class="fas fa-stop-circle"></i>
+                    <span>Brake Status</span>
+                </a>
+            </li>
+            <li class="option-item">
+                <a href="hvac-status.html" class="option-btn hvac">
+                    <i class="fas fa-fan"></i>
+                    <span>HVAC Status</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <div class="dashboard-container">
+            <h1>Fleet Status Overview</h1>
+            <p class="welcome-text">
+                Current operational status of all 38 train sets. Last system refresh: <span id="currentDateTime"></span>
+            </p>
+            
+            <div class="status-summary">
+                <div class="summary-card operational">
+                    <h3>Operational</h3>
+                    <div class="value">28</div>
+                    <div class="change">+2 from yesterday</div>
+                </div>
+                <div class="summary-card active">
+                    <h3>In Service</h3>
+                    <div class="value">24</div>
+                    <div class="change">No change</div>
+                </div>
+                <div class="summary-card maintenance">
+                    <h3>Maintenance</h3>
+                    <div class="value">7</div>
+                    <div class="change">-1 from yesterday</div>
+                </div>
+                <div class="summary-card out-of-service">
+                    <h3>Out of Service</h3>
+                    <div class="value">3</div>
+                    <div class="change">+1 from yesterday</div>
+                </div>
+            </div>
+            
+            <h2 style="margin-bottom: 1rem;">All Train Sets</h2>
+            <div class="trainset-grid" id="trainsetGrid">
+                <!-- Train sets will be populated by JavaScript -->
+            </div>
+            
+            <div class="last-updated">
+                Next scheduled maintenance check: Today at 23:00
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Train set data
+        const trainsets = [
+            { id: "TS-101", status: "operational", inService: true },
+            { id: "TS-102", status: "operational", inService: true },
+            { id: "TS-103", status: "operational", inService: true },
+            { id: "TS-104", status: "operational", inService: true },
+            { id: "TS-105", status: "operational", inService: true },
+            { id: "TS-106", status: "operational", inService: true },
+            { id: "TS-107", status: "operational", inService: true },
+            { id: "TS-108", status: "operational", inService: true },
+            { id: "TS-109", status: "operational", inService: true },
+            { id: "TS-110", status: "operational", inService: true },
+            { id: "TS-111", status: "operational", inService: true },
+            { id: "TS-112", status: "operational", inService: true },
+            { id: "TS-113", status: "operational", inService: true },
+            { id: "TS-114", status: "operational", inService: true },
+            { id: "TS-115", status: "operational", inService: true },
+            { id: "TS-116", status: "operational", inService: true },
+            { id: "TS-117", status: "operational", inService: true },
+            { id: "TS-118", status: "operational", inService: true },
+            { id: "TS-119", status: "operational", inService: true },
+            { id: "TS-120", status: "operational", inService: true },
+            { id: "TS-121", status: "operational", inService: false },
+            { id: "TS-122", status: "operational", inService: false },
+            { id: "TS-123", status: "operational", inService: false },
+            { id: "TS-124", status: "operational", inService: false },
+            { id: "TS-125", status: "maintenance", inService: false },
+            { id: "TS-126", status: "maintenance", inService: false },
+            { id: "TS-127", status: "maintenance", inService: false },
+            { id: "TS-128", status: "maintenance", inService: false },
+            { id: "TS-129", status: "maintenance", inService: false },
+            { id: "TS-130", status: "maintenance", inService: false },
+            { id: "TS-131", status: "maintenance", inService: false },
+            { id: "TS-132", status: "out-of-service", inService: false },
+            { id: "TS-133", status: "out-of-service", inService: false },
+            { id: "TS-134", status: "out-of-service", inService: false },
+            { id: "TS-135", status: "operational", inService: true },
+            { id: "TS-136", status: "operational", inService: true },
+            { id: "TS-137", status: "operational", inService: true },
+            { id: "TS-138", status: "operational", inService: true }
+        ];
+
+        // Display current date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('currentDateTime').textContent = 
+                now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) + 
+                ' at ' + now.toLocaleTimeString('en-US', options);
+        }
+        
+        // Render train sets
+        function renderTrainsets() {
+            const grid = document.getElementById('trainsetGrid');
+            grid.innerHTML = '';
+            
+            trainsets.forEach(trainset => {
+                const card = document.createElement('div');
+                card.className = 'trainset-card';
+                
+                const statusClass = `status-${trainset.status}`;
+                const statusText = trainset.status.replace('-', ' ');
+                const statusDisplay = trainset.status === 'operational' && trainset.inService 
+                    ? 'In Service' 
+                    : statusText.charAt(0).toUpperCase() + statusText.slice(1);
+                
+                card.innerHTML = `
+                    <div class="trainset-id">${trainset.id}</div>
+                    <div class="trainset-status ${statusClass}">${statusDisplay}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateTime();
+            renderTrainsets();
+            setInterval(updateDateTime, 1000);
+        });
+    </script>
 </body>
 </html>
