@@ -1,254 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | CMMS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary-color: #4361ee;
-      --primary-dark: #3a56d4;
-      --error-color: #ef233c;
-      --success-color: #2ec4b6;
-      --text-color: #2b2d42;
-      --text-light: #8d99ae;
-      --light-gray: #edf2f4;
-      --border-color: #e9ecef;
-      --white: #ffffff;
-      --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      --transition: all 0.3s ease;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-    }
-    
-    body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    
-    .login-container {
-      background-color: var(--white);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      padding: 40px;
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .login-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 6px;
-      background: linear-gradient(90deg, var(--primary-color), var(--success-color));
-    }
-    
-    h2 {
-      color: var(--text-color);
-      margin-bottom: 30px;
-      font-size: 28px;
-      font-weight: 600;
-    }
-    
-    .form-group {
-      margin-bottom: 24px;
-      text-align: left;
-      position: relative;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: var(--text-color);
-      font-size: 14px;
-    }
-    
-    input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 15px;
-      transition: var(--transition);
-      background-color: var(--light-gray);
-    }
-    
-    input::placeholder {
-      color: var(--text-light);
-      opacity: 0.7;
-    }
-    
-    input:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
-      background-color: var(--white);
-    }
-    
-    button {
-      background-color: var(--primary-color);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: var(--transition);
-      margin-top: 10px;
-      letter-spacing: 0.5px;
-    }
-    
-    button:hover {
-      background-color: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    #status {
-      margin-top: 20px;
-      color: var(--error-color);
-      font-size: 14px;
-      min-height: 20px;
-      font-weight: 500;
-    }
-    
-    .logo {
-      margin-bottom: 24px;
-    }
-    
-    .logo img {
-      height: 48px;
-    }
-    
-    .account-help {
-      display: block;
-      text-align: center;
-      margin-top: 16px;
-      font-size: 13px;
-      color: var(--text-light);
-      text-decoration: none;
-      transition: var(--transition);
-    }
-    
-    .account-help:hover {
-      color: var(--primary-color);
-    }
-    
-    .loading-spinner {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: var(--white);
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SCS Maintenance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --error: #ef233c;
+            --success: #2ec4b6;
+            --accent1: #38a169;
+            --accent2: #d69e2e;
+            --light: #f5f7fa;
+            --dark: #2b2d42;
+            --gray: #8d99ae;
+            --border: #e9ecef;
+            --white: #ffffff;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo svg {
+            width: 48px;
+            height: 48px;
+        }
+        
+        h2 {
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            background-color: var(--light);
+            transition: var(--transition);
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+            background-color: var(--white);
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #status {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            text-align: center;
+            min-height: 1.25rem;
+        }
+        
+        .error {
+            color: var(--error);
+        }
+        
+        .success {
+            color: var(--success);
+        }
+        
+        .account-help {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.8125rem;
+            color: var(--gray);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .account-help:hover {
+            color: var(--primary);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="logo">
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 48C37.2548 48 48 37.2548 48 24C48 10.7452 37.2548 0 24 0C10.7452 0 0 10.7452 0 24C0 37.2548 10.7452 48 24 48Z" fill="var(--primary-color)"/>
-        <path d="M24 36C30.6274 36 36 30.6274 36 24C36 17.3726 30.6274 12 24 12C17.3726 12 12 17.3726 12 24C12 30.6274 17.3726 36 24 36Z" fill="var(--white)"/>
-        <path d="M24 30C27.3137 30 30 27.3137 30 24C30 20.6863 27.3137 18 24 18C20.6863 18 18 20.6863 18 24C18 27.3137 20.6863 30 24 30Z" fill="var(--primary-color)"/>
-      </svg>
+    <div class="login-container">
+        <div class="logo">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M24 48C37.2548 48 48 37.2548 48 24C48 10.7452 37.2548 0 24 0C10.7452 0 0 10.7452 0 24C0 37.2548 10.7452 48 24 48Z" fill="var(--primary)"/>
+                <path d="M24 36C30.6274 36 36 30.6274 36 24C36 17.3726 30.6274 12 24 12C17.3726 12 12 17.3726 12 24C12 30.6274 17.3726 36 24 36Z" fill="var(--white)"/>
+                <path d="M24 30C27.3137 30 30 27.3137 30 24C30 20.6863 27.3137 18 24 18C20.6863 18 18 20.6863 18 24C18 27.3137 20.6863 30 24 30Z" fill="var(--primary)"/>
+            </svg>
+        </div>
+        <h2>SCS Maintenance Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+            
+            <button type="submit">
+                <span id="button-text">Login</span>
+            </button>
+        </form>
+
+        <p id="status"></p>
+        
+        <a href="#" class="account-help">Need help with your account? Contact administrator</a>
     </div>
-    <h2>Welcome</h2>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required placeholder="Enter your username">
-      </div>
-      
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required placeholder="••••••••">
-      </div>
-      
-      <button type="submit">
-        <span id="button-text">Login</span>
-      </button>
-    </form>
 
-    <p id="status"></p>
-    
-    <a href="#" class="account-help">Need help with your account? Contact administrator</a>
-  </div>
+    <script>
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwXHrWt1Z4qQXE7fnLHsv3BsqTHkR6e2mRgmkNIgSbGlgxZz88XlMAIJNjJhszzMQX6/exec";
 
-  <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwXHrWt1Z4qQXE7fnLHsv3BsqTHkR6e2mRgmkNIgSbGlgxZz88XlMAIJNjJhszzMQX6/exec"; // Replace with your Apps Script URL
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
 
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
+            const formData = new FormData(document.getElementById("loginForm"));
+            const statusElement = document.getElementById("status");
+            const submitButton = document.querySelector("button[type='submit']");
+            const buttonText = document.getElementById("button-text");
+            
+            // Show loading state
+            submitButton.disabled = true;
+            buttonText.innerHTML = `<span class="loading-spinner"></span> Logging in...`;
+            statusElement.textContent = "";
+            statusElement.className = "";
 
-      const formData = new FormData(document.getElementById("loginForm"));
-      const statusElement = document.getElementById("status");
-      const submitButton = document.querySelector("button[type='submit']");
-      const buttonText = document.getElementById("button-text");
-      
-      // Show loading state
-      submitButton.disabled = true;
-      buttonText.innerHTML = `<span class="loading-spinner"></span> Logging in...`;
-      statusElement.textContent = "";
-
-      fetch(scriptURL, {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.text())
-      .then(result => {
-        if (result.trim() === "success") {
-          statusElement.style.color = "var(--success-color)";
-          statusElement.textContent = "Login successful! Redirecting...";
-          setTimeout(() => {
-            window.location.href = "welcome.html";
-          }, 1000);
-        } else {
-          statusElement.style.color = "var(--error-color)";
-          statusElement.textContent = "Invalid username or password";
-        }
-      })
-      .catch(error => {
-        statusElement.style.color = "var(--error-color)";
-        statusElement.textContent = "Error connecting to server. Please try again.";
-        console.error("Error:", error);
-      })
-      .finally(() => {
-        submitButton.disabled = false;
-        buttonText.textContent = "Login";
-      });
-    });
-  </script>
+            fetch(scriptURL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result.trim() === "success") {
+                    statusElement.className = "success";
+                    statusElement.textContent = "Login successful! Redirecting...";
+                    setTimeout(() => {
+                        window.location.href = "welcome.html";
+                    }, 1000);
+                } else {
+                    statusElement.className = "error";
+                    statusElement.textContent = "Invalid username or password";
+                }
+            })
+            .catch(error => {
+                statusElement.className = "error";
+                statusElement.textContent = "Error connecting to server. Please try again.";
+                console.error("Error:", error);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                buttonText.textContent = "Login";
+            });
+        });
+    </script>
 </body>
 </html>
