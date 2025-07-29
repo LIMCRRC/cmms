@@ -512,7 +512,7 @@
                 card.innerHTML = `
                     <div class="trainset-id">${trainset.id}</div>
                     <div class="trainset-status ${statusClass}">${statusDisplay}</div>
-                    ${trainset.lastUpdated ? `<div class="last-update-time" style="font-size:0.7rem;color:#718096;">Updated: ${formatTime(trainset.lastUpdated)}</div>` : ''}
+                    ${trainset.lastUpdated ? `<div class="last-update-time" style="font-size:0.7rem;color:#718096;">Updated: ${formatDateTime(trainset.lastUpdated)}</div>` : ''}
                 `;
                 
                 grid.appendChild(card);
@@ -520,11 +520,12 @@
         }
         
         // Format time for display
-        function formatTime(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
+        function formatDateTime(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + 
+           date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
