@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCS Maintenance Dashboard</title>
+    <title>Railway Maintenance Dashboard</title>
     <style>
         :root {
             --primary: #2b6cb0;
@@ -107,8 +107,6 @@
             color: var(--gray);
         }
         
-        /* Button colors remain the same as previous version */
-        
         .dashboard-container {
             width: 100%;
             max-width: 1200px;
@@ -147,10 +145,10 @@
             color: var(--gray);
         }
         
-        .operational { border-color: var(--accent1); }
-        .active { border-color: var(--primary); }
+        .active { border-color: var(--accent1); } /* Changed from operational to active */
+        .in-service { border-color: var(--primary); }
         .maintenance { border-color: var(--accent2); }
-        .out-of-service { border-color: var(--secondary); }
+        .non-active { border-color: var(--secondary); } /* Changed from out-of-service to non-active */
         
         .trainset-grid {
             display: grid;
@@ -181,15 +179,36 @@
             display: inline-block;
         }
         
-        .status-operational { background: #ebf8f2; color: var(--accent1); }
-        .status-active { background: #ebf4ff; color: var(--primary); }
+        .status-active { background: #ebf8f2; color: var(--accent1); } /* Changed from operational to active */
+        .status-in-service { background: #ebf4ff; color: var(--primary); }
         .status-maintenance { background: #fffaf0; color: var(--accent2); }
-        .status-out-of-service { background: #fff5f5; color: var(--secondary); }
+        .status-non-active { background: #fff5f5; color: var(--secondary); } /* Changed from out-of-service to non-active */
         
         .last-updated {
             font-size: 0.85rem;
             color: var(--gray);
             margin-top: 1rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0,0,0,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        .error-message {
+            color: var(--secondary);
+            padding: 1rem;
+            background-color: #fff5f5;
+            border-radius: 6px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         @media (max-width: 1200px) {
@@ -267,86 +286,54 @@
         <div class="dashboard-container">
             <h1>Fleet Status Overview</h1>
             <p class="welcome-text">
-                Current operational status of all 38 train sets. Last system refresh: <span id="currentDateTime"></span>
+                Current operational status of all train sets. Last system refresh: <span id="currentDateTime"></span>
+                <span id="loadingIndicator" style="display: none;"><span class="loading"></span> Updating data...</span>
             </p>
             
             <div class="status-summary">
-                <div class="summary-card operational">
-                    <h3>Operational</h3>
-                    <div class="value">28</div>
-                    <div class="change">+2 from yesterday</div>
-                </div>
                 <div class="summary-card active">
+                    <h3>Active</h3> <!-- Changed from Operational to Active -->
+                    <div class="value" id="activeCount">--</div>
+                    <div class="change" id="activeChange">Loading...</div>
+                </div>
+                <div class="summary-card in-service">
                     <h3>In Service</h3>
-                    <div class="value">24</div>
-                    <div class="change">No change</div>
+                    <div class="value" id="inServiceCount">--</div>
+                    <div class="change" id="inServiceChange">Loading...</div>
                 </div>
                 <div class="summary-card maintenance">
                     <h3>Maintenance</h3>
-                    <div class="value">7</div>
-                    <div class="change">-1 from yesterday</div>
+                    <div class="value" id="maintenanceCount">--</div>
+                    <div class="change" id="maintenanceChange">Loading...</div>
                 </div>
-                <div class="summary-card out-of-service">
-                    <h3>Out of Service</h3>
-                    <div class="value">3</div>
-                    <div class="change">+1 from yesterday</div>
+                <div class="summary-card non-active">
+                    <h3>Non-Active</h3> <!-- Changed from Out of Service to Non-Active -->
+                    <div class="value" id="nonActiveCount">--</div>
+                    <div class="change" id="nonActiveChange">Loading...</div>
                 </div>
             </div>
             
             <h2 style="margin-bottom: 1rem;">All Train Sets</h2>
             <div class="trainset-grid" id="trainsetGrid">
-                <!-- Train sets will be populated by JavaScript -->
+                <div>Loading train set data...</div>
             </div>
             
             <div class="last-updated">
-                Next scheduled maintenance check: Today at 23:00
+                Next scheduled maintenance check: <span id="nextMaintenance">Today at 23:00</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Train set data
-        const trainsets = [
-            { id: "TS-101", status: "operational", inService: true },
-            { id: "TS-102", status: "operational", inService: true },
-            { id: "TS-103", status: "operational", inService: true },
-            { id: "TS-104", status: "operational", inService: true },
-            { id: "TS-105", status: "operational", inService: true },
-            { id: "TS-106", status: "operational", inService: true },
-            { id: "TS-107", status: "operational", inService: true },
-            { id: "TS-108", status: "operational", inService: true },
-            { id: "TS-109", status: "operational", inService: true },
-            { id: "TS-110", status: "operational", inService: true },
-            { id: "TS-111", status: "operational", inService: true },
-            { id: "TS-112", status: "operational", inService: true },
-            { id: "TS-113", status: "operational", inService: true },
-            { id: "TS-114", status: "operational", inService: true },
-            { id: "TS-115", status: "operational", inService: true },
-            { id: "TS-116", status: "operational", inService: true },
-            { id: "TS-117", status: "operational", inService: true },
-            { id: "TS-118", status: "operational", inService: true },
-            { id: "TS-119", status: "operational", inService: true },
-            { id: "TS-120", status: "operational", inService: true },
-            { id: "TS-121", status: "operational", inService: false },
-            { id: "TS-122", status: "operational", inService: false },
-            { id: "TS-123", status: "operational", inService: false },
-            { id: "TS-124", status: "operational", inService: false },
-            { id: "TS-125", status: "maintenance", inService: false },
-            { id: "TS-126", status: "maintenance", inService: false },
-            { id: "TS-127", status: "maintenance", inService: false },
-            { id: "TS-128", status: "maintenance", inService: false },
-            { id: "TS-129", status: "maintenance", inService: false },
-            { id: "TS-130", status: "maintenance", inService: false },
-            { id: "TS-131", status: "maintenance", inService: false },
-            { id: "TS-132", status: "out-of-service", inService: false },
-            { id: "TS-133", status: "out-of-service", inService: false },
-            { id: "TS-134", status: "out-of-service", inService: false },
-            { id: "TS-135", status: "operational", inService: true },
-            { id: "TS-136", status: "operational", inService: true },
-            { id: "TS-137", status: "operational", inService: true },
-            { id: "TS-138", status: "operational", inService: true }
-        ];
-
+        // Configuration - Replace with your Google Apps Script Web App URL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwvd4qbZr0e5J2qzQzODbcVf89bKST1Jppz0Ukj9zj8HMztkOrRywYWUfwatwImyWJh8A/exec';
+        const REFRESH_INTERVAL = 300000; // 5 minutes in milliseconds
+        
+        // Global variables to store data
+        let trainsets = [];
+        let previousData = null;
+        let lastFetchTime = null;
+        
         // Display current date and time
         function updateDateTime() {
             const now = new Date();
@@ -361,35 +348,194 @@
                 ' at ' + now.toLocaleTimeString('en-US', options);
         }
         
+        // Fetch data from Google Apps Script
+        async function fetchData() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'inline';
+                
+                const response = await fetch(`${WEB_APP_URL}?sheet=TrainStatus`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                processData(data);
+                
+                // Store the current data as previous data for next comparison
+                previousData = trainsets;
+                lastFetchTime = new Date();
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('trainsetGrid').innerHTML = 
+                    '<div class="error-message">Failed to load data. Please try again later.</div>';
+            }
+        }
+        
+        // Process the data from the API
+        function processData(apiData) {
+            trainsets = [];
+            const counts = {
+                active: 0, // Changed from operational to active
+                inService: 0,
+                maintenance: 0,
+                nonActive: 0 // Changed from outOfService to nonActive
+            };
+            
+            apiData.forEach(item => {
+                // Convert status names
+                let status = item.Status ? item.Status.toLowerCase().replace(' ', '-') : 'unknown';
+                if (status === 'operational') status = 'active'; // Convert operational to active
+                if (status === 'out-of-service') status = 'non-active'; // Convert out-of-service to non-active
+                
+                const isInService = item.InService && item.InService.toString().toLowerCase() === 'true';
+                
+                trainsets.push({
+                    id: item.ID || 'Unknown',
+                    status: status,
+                    inService: isInService,
+                    lastUpdated: item.LastUpdated
+                });
+                
+                // Update counts
+                if (status === 'active') { // Changed from operational to active
+                    counts.active++;
+                    if (isInService) counts.inService++;
+                } else if (status === 'maintenance') {
+                    counts.maintenance++;
+                } else if (status === 'non-active') { // Changed from out-of-service to non-active
+                    counts.nonActive++;
+                }
+            });
+            
+            // Update summary cards
+            document.getElementById('activeCount').textContent = counts.active; // Changed from operationalCount to activeCount
+            document.getElementById('inServiceCount').textContent = counts.inService;
+            document.getElementById('maintenanceCount').textContent = counts.maintenance;
+            document.getElementById('nonActiveCount').textContent = counts.nonActive; // Changed from outOfServiceCount to nonActiveCount
+            
+            // Calculate changes from previous data if available
+            if (previousData) {
+                updateChangeIndicators(counts);
+            } else {
+                // If no previous data, just show "Initial load"
+                document.getElementById('activeChange').textContent = 'Initial load'; // Changed from operationalChange to activeChange
+                document.getElementById('inServiceChange').textContent = 'Initial load';
+                document.getElementById('maintenanceChange').textContent = 'Initial load';
+                document.getElementById('nonActiveChange').textContent = 'Initial load'; // Changed from outOfServiceChange to nonActiveChange
+            }
+            
+            // Render train sets
+            renderTrainsets();
+        }
+        
+        // Calculate and display changes from previous data
+        function updateChangeIndicators(currentCounts) {
+            // Calculate previous counts
+            const prevCounts = {
+                active: 0, // Changed from operational to active
+                inService: 0,
+                maintenance: 0,
+                nonActive: 0 // Changed from outOfService to nonActive
+            };
+            
+            previousData.forEach(trainset => {
+                if (trainset.status === 'active') { // Changed from operational to active
+                    prevCounts.active++;
+                    if (trainset.inService) prevCounts.inService++;
+                } else if (trainset.status === 'maintenance') {
+                    prevCounts.maintenance++;
+                } else if (trainset.status === 'non-active') { // Changed from out-of-service to non-active
+                    prevCounts.nonActive++;
+                }
+            });
+            
+            // Update change indicators
+            updateChangeIndicator('active', currentCounts.active, prevCounts.active); // Changed from operational to active
+            updateChangeIndicator('inService', currentCounts.inService, prevCounts.inService);
+            updateChangeIndicator('maintenance', currentCounts.maintenance, prevCounts.maintenance);
+            updateChangeIndicator('nonActive', currentCounts.nonActive, prevCounts.nonActive); // Changed from outOfService to nonActive
+        }
+        
+        function updateChangeIndicator(type, current, previous) {
+            const change = current - previous;
+            const elementId = `${type}Change`;
+            const element = document.getElementById(elementId);
+            
+            if (change > 0) {
+                element.textContent = `+${change} from last update`;
+                element.style.color = 'green';
+            } else if (change < 0) {
+                element.textContent = `${change} from last update`;
+                element.style.color = 'red';
+            } else {
+                element.textContent = 'No change';
+                element.style.color = 'var(--gray)';
+            }
+        }
+        
         // Render train sets
         function renderTrainsets() {
             const grid = document.getElementById('trainsetGrid');
             grid.innerHTML = '';
+            
+            if (trainsets.length === 0) {
+                grid.innerHTML = '<div>No train set data available</div>';
+                return;
+            }
             
             trainsets.forEach(trainset => {
                 const card = document.createElement('div');
                 card.className = 'trainset-card';
                 
                 const statusClass = `status-${trainset.status}`;
-                const statusText = trainset.status.replace('-', ' ');
-                const statusDisplay = trainset.status === 'operational' && trainset.inService 
-                    ? 'In Service' 
-                    : statusText.charAt(0).toUpperCase() + statusText.slice(1);
+                let statusDisplay = '';
+                
+                // Convert status for display
+                switch(trainset.status) {
+                    case 'active':
+                        statusDisplay = trainset.inService ? 'In Service' : 'Active';
+                        break;
+                    case 'maintenance':
+                        statusDisplay = 'Maintenance';
+                        break;
+                    case 'non-active':
+                        statusDisplay = 'Non-Active';
+                        break;
+                    default:
+                        statusDisplay = trainset.status.charAt(0).toUpperCase() + trainset.status.slice(1);
+                }
                 
                 card.innerHTML = `
                     <div class="trainset-id">${trainset.id}</div>
                     <div class="trainset-status ${statusClass}">${statusDisplay}</div>
+                    ${trainset.lastUpdated ? `<div class="last-update-time" style="font-size:0.7rem;color:#718096;">Updated: ${formatTime(trainset.lastUpdated)}</div>` : ''}
                 `;
                 
                 grid.appendChild(card);
             });
         }
         
+        // Format time for display
+        function formatTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             updateDateTime();
-            renderTrainsets();
+            fetchData();
+            
+            // Update time every second
             setInterval(updateDateTime, 1000);
+            
+            // Refresh data at specified interval
+            setInterval(fetchData, REFRESH_INTERVAL);
         });
     </script>
 </body>
