@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Railway Maintenance Dashboard</title>
+    <title>SCS Maintenance Dashboard</title>
     <style>
         :root {
             --primary: #2b6cb0;
@@ -28,16 +28,16 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--light);
             color: var(--dark);
-            line-height: 1.6;
+            line-height: 1.5; /* Tighter line height */
             display: flex;
             min-height: 100vh;
             overflow-x: hidden;
         }
         
         .options-sidebar {
-            width: 280px;
+            width: 200px; /* Even more compact */
             background: white;
-            padding: 1.5rem 1rem;
+            padding: 1rem 0.75rem; /* Reduced padding */
             display: flex;
             flex-direction: column;
             background-color: #f8f9fa;
@@ -50,7 +50,7 @@
         
         .main-content {
             flex: 1;
-            padding: 1.5rem 2rem;
+            padding: 1.25rem; /* Reduced padding */
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -59,48 +59,48 @@
         }
         
         h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+            font-size: 1.7rem; /* Slightly smaller */
+            margin-bottom: 0.75rem; /* Reduced margin */
             color: var(--primary-dark);
             font-weight: 700;
         }
         
         .welcome-text {
-            font-size: 1rem;
+            font-size: 0.9rem; /* Smaller */
             color: var(--gray);
             max-width: 1000px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem; /* Reduced margin */
         }
         
         .sidebar-header {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1.25rem; /* Reduced margin */
+            padding-bottom: 0.75rem; /* Reduced padding */
             border-bottom: 1px solid #e2e8f0;
         }
         
         .sidebar-header h2 {
             color: var(--primary);
-            font-size: 1.3rem;
+            font-size: 1.1rem; /* Smaller */
             margin-bottom: 0.5rem;
         }
         
         .options-list {
             list-style: none;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem; /* Reduced margin */
         }
         
         .option-item {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem; /* Reduced margin */
         }
         
         .option-btn {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem; /* More compact */
             background-color: white;
             text-decoration: none;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Smaller */
             font-weight: 500;
             transition: var(--transition);
             border: 1px solid #e2e8f0;
@@ -114,87 +114,99 @@
         
         .status-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* More compact */
+            gap: 0.75rem; /* Reduced gap */
+            margin-bottom: 1.25rem; /* Reduced margin */
         }
         
         .summary-card {
             background: white;
-            border-radius: 8px;
-            padding: 1rem;
+            border-radius: 6px; /* Slightly smaller */
+            padding: 0.75rem; /* Reduced padding */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border-top: 4px solid;
+            border-top: 3px solid; /* Thinner border */
             text-align: left;
         }
         
         .summary-card h3 {
-            font-size: 0.85rem;
+            font-size: 0.8rem; /* Smaller */
             color: var(--gray);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem; /* Reduced margin */
         }
         
         .summary-card .value {
-            font-size: 1.5rem;
+            font-size: 1.4rem; /* Slightly smaller */
             font-weight: 700;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem; /* Reduced margin */
         }
         
         .summary-card .change {
-            font-size: 0.75rem;
+            font-size: 0.7rem; /* Smaller */
             color: var(--gray);
         }
         
-        .active { border-color: var(--accent1); } /* Changed from operational to active */
+        .active { border-color: var(--accent1); }
         .in-service { border-color: var(--primary); }
         .maintenance { border-color: var(--accent2); }
-        .non-active { border-color: var(--secondary); } /* Changed from out-of-service to non-active */
+        .non-active { border-color: var(--secondary); }
         
         .trainset-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Balanced size */
+            gap: 0.8rem; /* Reduced gap */
+            margin-bottom: 1.25rem; /* Reduced margin */
+            width: 100%;
         }
         
         .trainset-card {
             background: white;
             border-radius: 6px;
-            padding: 1rem;
+            padding: 0.7rem; /* More compact */
             text-align: center;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            min-height: 80px; /* More compact */
         }
         
         .trainset-id {
             font-weight: 700;
-            margin-bottom: 0.25rem;
-            font-size: 1rem;
+            margin-bottom: 0.2rem; /* Reduced margin */
+            font-size: 0.95rem; /* Slightly smaller */
         }
         
         .trainset-status {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
+            font-size: 0.7rem; /* Smaller */
+            padding: 0.2rem 0.4rem; /* More compact */
+            border-radius: 10px; /* Slightly smaller */
             display: inline-block;
+            margin-bottom: 0.2rem; /* Reduced margin */
         }
         
-        .status-active { background: #ebf8f2; color: var(--accent1); } /* Changed from operational to active */
+        .last-update-time {
+            font-size: 0.65rem; /* Smaller */
+            color: var(--gray);
+            margin-top: auto;
+            line-height: 1.3; /* Tighter */
+        }
+        
+        .status-active { background: #ebf8f2; color: var(--accent1); }
         .status-in-service { background: #ebf4ff; color: var(--primary); }
         .status-maintenance { background: #fffaf0; color: var(--accent2); }
-        .status-non-active { background: #fff5f5; color: var(--secondary); } /* Changed from out-of-service to non-active */
+        .status-non-active { background: #fff5f5; color: var(--secondary); }
         
         .last-updated {
-            font-size: 0.85rem;
+            font-size: 0.8rem; /* Smaller */
             color: var(--gray);
-            margin-top: 1rem;
+            margin-top: 0.75rem; /* Reduced margin */
         }
         
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0,0,0,.3);
+            width: 18px; /* Smaller */
+            height: 18px; /* Smaller */
+            border: 2px solid rgba(0,0,0,.3); /* Thinner */
             border-radius: 50%;
             border-top-color: var(--primary);
             animation: spin 1s ease-in-out infinite;
@@ -202,18 +214,30 @@
         
         .error-message {
             color: var(--secondary);
-            padding: 1rem;
+            padding: 0.75rem; /* Reduced padding */
             background-color: #fff5f5;
             border-radius: 6px;
+            font-size: 0.85rem; /* Smaller */
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
+        /* Responsive adjustments */
         @media (max-width: 1200px) {
             .trainset-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .trainset-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .status-summary {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             }
         }
         
@@ -226,7 +250,7 @@
                 width: 100%;
                 height: auto;
                 position: relative;
-                padding: 1rem;
+                padding: 0.75rem;
                 border-right: none;
                 border-bottom: 1px solid #e2e8f0;
             }
@@ -239,6 +263,20 @@
             .status-summary {
                 grid-template-columns: 1fr 1fr;
             }
+            
+            .trainset-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .trainset-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+            
+            .status-summary {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -246,7 +284,7 @@
 <body>
     <div class="options-sidebar">
         <div class="sidebar-header">
-            <h2>Railway Maintenance</h2>
+            <h2>Scope</h2>
         </div>
         <ul class="options-list">
             <li class="option-item">
@@ -284,7 +322,7 @@
     
     <div class="main-content">
         <div class="dashboard-container">
-            <h1>Fleet Status Overview</h1>
+            <h1>SCS Status Overview</h1>
             <p class="welcome-text">
                 Current operational status of all train sets. Last system refresh: <span id="currentDateTime"></span>
                 <span id="loadingIndicator" style="display: none;"><span class="loading"></span> Updating data...</span>
@@ -292,7 +330,7 @@
             
             <div class="status-summary">
                 <div class="summary-card active">
-                    <h3>Active</h3> <!-- Changed from Operational to Active -->
+                    <h3>Active</h3>
                     <div class="value" id="activeCount">--</div>
                     <div class="change" id="activeChange">Loading...</div>
                 </div>
@@ -307,19 +345,19 @@
                     <div class="change" id="maintenanceChange">Loading...</div>
                 </div>
                 <div class="summary-card non-active">
-                    <h3>Non-Active</h3> <!-- Changed from Out of Service to Non-Active -->
+                    <h3>Non-Active</h3>
                     <div class="value" id="nonActiveCount">--</div>
                     <div class="change" id="nonActiveChange">Loading...</div>
                 </div>
             </div>
             
-            <h2 style="margin-bottom: 1rem;">All Train Sets</h2>
+            <h2 style="margin-bottom: 0.75rem; font-size: 1.2rem;">SCS Sets</h2>
             <div class="trainset-grid" id="trainsetGrid">
                 <div>Loading train set data...</div>
             </div>
             
             <div class="last-updated">
-                Next scheduled maintenance check: <span id="nextMaintenance">Today at 23:00</span>
+                Next scheduled maintenance check: <span id="nextMaintenance">Today at 08:30</span>
             </div>
         </div>
     </div>
@@ -334,18 +372,11 @@
         let previousData = null;
         let lastFetchTime = null;
         
-        // Display current date and time
+        // Display current date and time in compact format with year
         function updateDateTime() {
             const now = new Date();
-            const options = { 
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            };
             document.getElementById('currentDateTime').textContent = 
-                now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) + 
-                ' at ' + now.toLocaleTimeString('en-US', options);
+                `${now.getDate()} ${now.toLocaleString('default', { month: 'short' })} ${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         }
         
         // Fetch data from Google Apps Script
@@ -379,17 +410,16 @@
         function processData(apiData) {
             trainsets = [];
             const counts = {
-                active: 0, // Changed from operational to active
+                active: 0,
                 inService: 0,
                 maintenance: 0,
-                nonActive: 0 // Changed from outOfService to nonActive
+                nonActive: 0
             };
             
             apiData.forEach(item => {
-                // Convert status names
                 let status = item.Status ? item.Status.toLowerCase().replace(' ', '-') : 'unknown';
-                if (status === 'operational') status = 'active'; // Convert operational to active
-                if (status === 'out-of-service') status = 'non-active'; // Convert out-of-service to non-active
+                if (status === 'operational') status = 'active';
+                if (status === 'out-of-service') status = 'non-active';
                 
                 const isInService = item.InService && item.InService.toString().toLowerCase() === 'true';
                 
@@ -401,31 +431,31 @@
                 });
                 
                 // Update counts
-                if (status === 'active') { // Changed from operational to active
+                if (status === 'active') {
                     counts.active++;
                     if (isInService) counts.inService++;
                 } else if (status === 'maintenance') {
                     counts.maintenance++;
-                } else if (status === 'non-active') { // Changed from out-of-service to non-active
+                } else if (status === 'non-active') {
                     counts.nonActive++;
                 }
             });
             
             // Update summary cards
-            document.getElementById('activeCount').textContent = counts.active; // Changed from operationalCount to activeCount
+            document.getElementById('activeCount').textContent = counts.active;
             document.getElementById('inServiceCount').textContent = counts.inService;
             document.getElementById('maintenanceCount').textContent = counts.maintenance;
-            document.getElementById('nonActiveCount').textContent = counts.nonActive; // Changed from outOfServiceCount to nonActiveCount
+            document.getElementById('nonActiveCount').textContent = counts.nonActive;
             
             // Calculate changes from previous data if available
             if (previousData) {
                 updateChangeIndicators(counts);
             } else {
                 // If no previous data, just show "Initial load"
-                document.getElementById('activeChange').textContent = 'Initial load'; // Changed from operationalChange to activeChange
+                document.getElementById('activeChange').textContent = 'Initial load';
                 document.getElementById('inServiceChange').textContent = 'Initial load';
                 document.getElementById('maintenanceChange').textContent = 'Initial load';
-                document.getElementById('nonActiveChange').textContent = 'Initial load'; // Changed from outOfServiceChange to nonActiveChange
+                document.getElementById('nonActiveChange').textContent = 'Initial load';
             }
             
             // Render train sets
@@ -436,28 +466,28 @@
         function updateChangeIndicators(currentCounts) {
             // Calculate previous counts
             const prevCounts = {
-                active: 0, // Changed from operational to active
+                active: 0,
                 inService: 0,
                 maintenance: 0,
-                nonActive: 0 // Changed from outOfService to nonActive
+                nonActive: 0
             };
             
             previousData.forEach(trainset => {
-                if (trainset.status === 'active') { // Changed from operational to active
+                if (trainset.status === 'active') {
                     prevCounts.active++;
                     if (trainset.inService) prevCounts.inService++;
                 } else if (trainset.status === 'maintenance') {
                     prevCounts.maintenance++;
-                } else if (trainset.status === 'non-active') { // Changed from out-of-service to non-active
+                } else if (trainset.status === 'non-active') {
                     prevCounts.nonActive++;
                 }
             });
             
             // Update change indicators
-            updateChangeIndicator('active', currentCounts.active, prevCounts.active); // Changed from operational to active
+            updateChangeIndicator('active', currentCounts.active, prevCounts.active);
             updateChangeIndicator('inService', currentCounts.inService, prevCounts.inService);
             updateChangeIndicator('maintenance', currentCounts.maintenance, prevCounts.maintenance);
-            updateChangeIndicator('nonActive', currentCounts.nonActive, prevCounts.nonActive); // Changed from outOfService to nonActive
+            updateChangeIndicator('nonActive', currentCounts.nonActive, prevCounts.nonActive);
         }
         
         function updateChangeIndicator(type, current, previous) {
@@ -512,20 +542,25 @@
                 card.innerHTML = `
                     <div class="trainset-id">${trainset.id}</div>
                     <div class="trainset-status ${statusClass}">${statusDisplay}</div>
-                    ${trainset.lastUpdated ? `<div class="last-update-time" style="font-size:0.7rem;color:#718096;">Updated: ${formatDateTime(trainset.lastUpdated)}</div>` : ''}
+                    ${trainset.lastUpdated ? `<div class="last-update-time">${formatCompactDateTimeWithYear(trainset.lastUpdated)}</div>` : ''}
                 `;
                 
                 grid.appendChild(card);
             });
         }
         
-        // Format time for display
-        function formatDateTime(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + 
-           date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
+        // Format time for display in a compact way including year
+        function formatCompactDateTimeWithYear(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.toLocaleString('default', { month: 'short' });
+            const year = date.getFullYear().toString().slice(-2); // Last 2 digits of year
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            
+            return `${day} ${month} '${year} ${hours}:${minutes}`;
+        }
         
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
