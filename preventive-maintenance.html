@@ -56,12 +56,34 @@
             margin-bottom: 1.25rem;
             padding-bottom: 0.75rem;
             border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .sidebar-header h2 {
             color: var(--primary);
             font-size: 1.1rem;
             margin-bottom: 0.5rem;
+        }
+        
+        .home-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .home-btn:hover {
+            background-color: rgba(43, 108, 176, 0.1);
+        }
+        
+        .home-btn i {
+            margin-right: 0.25rem;
         }
         
         .section-header {
@@ -346,6 +368,9 @@
     <div class="options-sidebar">
         <div class="sidebar-header">
             <h2>SCS Maintenance</h2>
+            <button class="home-btn" onclick="window.location.href='welcome.html'">
+                <i class="fas fa-home"></i> Home
+            </button>
         </div>
         
         <!-- Maintenance Section -->
@@ -378,15 +403,15 @@
             </div>
             <ul class="options-list">
                 <li class="option-item">
-                    <a href="#handover" class="option-btn active" onclick="showSection('handover')">
+                    <a href="#hand-over" class="option-btn active" onclick="showSection('hand-over')">
                         <i class="fas fa-sign-in-alt"></i>
-                        <span>Handover</span>
+                        <span>Hand-Over</span>
                     </a>
                 </li>
                 <li class="option-item">
-                    <a href="#completion" class="option-btn" onclick="showSection('completion')">
+                    <a href="#hand-back" class="option-btn" onclick="showSection('hand-back')">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span>Completion</span>
+                        <span>Hand-Back</span>
                     </a>
                 </li>
             </ul>
@@ -397,16 +422,16 @@
         <div class="dashboard-container">
             <h1>Preventive Maintenance</h1>
             <p class="welcome-text">
-                Manage preventive maintenance handover and completion processes. Last updated: <span id="currentDateTime"></span>
+                Manage preventive maintenance hand-over and hand-back processes. Last updated: <span id="currentDateTime"></span>
             </p>
             
-            <!-- Handover for Maintenance Section -->
-            <div id="handoverSection" class="card">
+            <!-- Hand-Over for Maintenance Section -->
+            <div id="hand-overSection" class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-sign-in-alt"></i> Handover for Maintenance</h2>
+                    <h2><i class="fas fa-sign-in-alt"></i> Hand-Over for Maintenance</h2>
                 </div>
                 
-                <form id="handoverForm">
+                <form id="hand-overForm">
                     <div class="form-group">
                         <label for="trainSet">Train Set *</label>
                         <select id="trainSet" class="form-control" required>
@@ -422,9 +447,9 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="handoverSheet">Handover Sheet Number *</label>
-                        <input type="text" id="handoverSheet" class="form-control" required 
-                               placeholder="Enter handover sheet number">
+                        <label for="hand-overSheet">Hand-Over Sheet Number *</label>
+                        <input type="text" id="hand-overSheet" class="form-control" required 
+                               placeholder="Enter hand-over sheet number">
                     </div>
                     
                     <div class="form-group">
@@ -449,21 +474,21 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="handoverRemarks">Remarks</label>
-                        <textarea id="handoverRemarks" class="form-control" 
+                        <label for="hand-overRemarks">Remarks</label>
+                        <textarea id="hand-overRemarks" class="form-control" 
                                   placeholder="Enter any additional remarks"></textarea>
                     </div>
                     
                     <div class="btn-group">
-                        <button type="button" id="handoverSubmitBtn" class="btn btn-success" onclick="submitHandover()">
-                            <i class="fas fa-check"></i> Submit Handover
+                        <button type="button" id="hand-overSubmitBtn" class="btn btn-success" onclick="submitHandOver()">
+                            <i class="fas fa-check"></i> Submit Hand-Over
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetForm('handoverForm')">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('hand-overForm')">
                             <i class="fas fa-redo"></i> Reset Form
                         </button>
                     </div>
                     
-                    <div id="handoverStatus" class="status-message"></div>
+                    <div id="hand-overStatus" class="status-message"></div>
                     
                     <!-- Work Order Display (hidden by default) -->
                     <div id="workOrderDisplay" class="work-order-display" style="display: none;">
@@ -473,13 +498,13 @@
                 </form>
             </div>
             
-            <!-- Completion of Maintenance Section -->
-            <div id="completionSection" class="card" style="display: none;">
+            <!-- Hand-Back of Maintenance Section -->
+            <div id="hand-backSection" class="card" style="display: none;">
                 <div class="card-header">
-                    <h2><i class="fas fa-sign-out-alt"></i> Completion of Maintenance</h2>
+                    <h2><i class="fas fa-sign-out-alt"></i> Hand-Back of Maintenance</h2>
                 </div>
                 
-                <form id="completionForm">
+                <form id="hand-backForm">
                     <div class="form-group">
                         <label for="maintenanceTrainSet">Train Set Under Maintenance *</label>
                         <select id="maintenanceTrainSet" class="form-control" required>
@@ -495,21 +520,21 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="completionRemarks">Remarks</label>
-                        <textarea id="completionRemarks" class="form-control" 
-                                 placeholder="Enter completion remarks"></textarea>
+                        <label for="hand-backRemarks">Remarks</label>
+                        <textarea id="hand-backRemarks" class="form-control" 
+                                 placeholder="Enter hand-back remarks"></textarea>
                     </div>
                     
                     <div class="btn-group">
-                        <button type="button" id="completionSubmitBtn" class="btn btn-success" onclick="submitCompletion()">
-                            <i class="fas fa-check"></i> Submit Completion
+                        <button type="button" id="hand-backSubmitBtn" class="btn btn-success" onclick="submitHandBack()">
+                            <i class="fas fa-check"></i> Submit Hand-Back
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetForm('completionForm')">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('hand-backForm')">
                             <i class="fas fa-redo"></i> Reset Form
                         </button>
                     </div>
                     
-                    <div id="completionStatus" class="status-message"></div>
+                    <div id="hand-backStatus" class="status-message"></div>
                 </form>
             </div>
         </div>
@@ -533,8 +558,8 @@
     // Show specific section
     function showSection(sectionId) {
         // Hide all sections
-        document.getElementById('handoverSection').style.display = 'none';
-        document.getElementById('completionSection').style.display = 'none';
+        document.getElementById('hand-overSection').style.display = 'none';
+        document.getElementById('hand-backSection').style.display = 'none';
         
         // Show selected section
         document.getElementById(`${sectionId}Section`).style.display = 'block';
@@ -545,27 +570,27 @@
         });
         event.currentTarget.classList.add('active');
         
-        // If showing completion section, populate the maintenance trains dropdown
-        if (sectionId === 'completion') {
+        // If showing hand-back section, populate the maintenance trains dropdown
+        if (sectionId === 'hand-back') {
             populateMaintenanceTrains();
         }
     }
     
-    // Submit handover form
-    async function submitHandover() {
+    // Submit hand-over form
+    async function submitHandOver() {
         const trainSet = document.getElementById('trainSet').value;
-        const handoverSheet = document.getElementById('handoverSheet').value;
+        const handOverSheet = document.getElementById('hand-overSheet').value;
         const maintenanceType = document.getElementById('maintenanceType').value;
-        const remarks = document.getElementById('handoverRemarks').value;
+        const remarks = document.getElementById('hand-overRemarks').value;
         
         // Validate
-        if (!trainSet || !handoverSheet || !maintenanceType) {
-            showStatusMessage('handoverStatus', 'Please fill all required fields', 'error');
+        if (!trainSet || !handOverSheet || !maintenanceType) {
+            showStatusMessage('hand-overStatus', 'Please fill all required fields', 'error');
             return;
         }
         
         // Set loading state
-        const submitBtn = document.getElementById('handoverSubmitBtn');
+        const submitBtn = document.getElementById('hand-overSubmitBtn');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<span class="loading"></span> Processing...';
         submitBtn.disabled = true;
@@ -573,9 +598,9 @@
         try {
             // Prepare data for Google Apps Script
             const params = new URLSearchParams();
-            params.append('action', 'handover');
+            params.append('action', 'hand-over');
             params.append('trainSet', trainSet);
-            params.append('handoverSheet', handoverSheet);
+            params.append('handOverSheet', handOverSheet);
             params.append('maintenanceType', maintenanceType);
             if (remarks) params.append('remarks', remarks);
             
@@ -606,12 +631,12 @@
                 document.getElementById('workOrderDisplay').style.display = 'block';
                 
                 // Show success message
-                showStatusMessage('handoverStatus', 
-                    `Handover recorded successfully. Work Order ${result.data.workOrder} generated.`, 
+                showStatusMessage('hand-overStatus', 
+                    `Hand-Over recorded successfully. Work Order ${result.data.workOrder} generated.`, 
                     'success');
                 
                 // Reset form (but keep the work order displayed)
-                document.getElementById('handoverForm').reset();
+                document.getElementById('hand-overForm').reset();
                 
                 // Update the maintenance trains cache
                 maintenanceTrainsCache.push({
@@ -621,12 +646,12 @@
                 });
                 
             } else {
-                throw new Error(result.data || 'Failed to record handover');
+                throw new Error(result.data || 'Failed to record hand-over');
             }
         } catch (error) {
-            console.error('Error submitting handover:', error);
-            showStatusMessage('handoverStatus', 
-                error.message || 'Failed to submit handover. Please try again.', 
+            console.error('Error submitting hand-over:', error);
+            showStatusMessage('hand-overStatus', 
+                error.message || 'Failed to submit hand-over. Please try again.', 
                 'error');
         } finally {
             // Reset button state
@@ -635,20 +660,20 @@
         }
     }
     
-    // Submit completion form
-    async function submitCompletion() {
+    // Submit hand-back form
+    async function submitHandBack() {
         const trainSet = document.getElementById('maintenanceTrainSet').value;
         const handBackSheet = document.getElementById('handBackSheet').value;
-        const remarks = document.getElementById('completionRemarks').value;
+        const remarks = document.getElementById('hand-backRemarks').value;
         
         // Validate
         if (!trainSet || !handBackSheet) {
-            showStatusMessage('completionStatus', 'Please fill all required fields', 'error');
+            showStatusMessage('hand-backStatus', 'Please fill all required fields', 'error');
             return;
         }
         
         // Set loading state
-        const submitBtn = document.getElementById('completionSubmitBtn');
+        const submitBtn = document.getElementById('hand-backSubmitBtn');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<span class="loading"></span> Processing...';
         submitBtn.disabled = true;
@@ -656,7 +681,7 @@
         try {
             // Prepare data for Google Apps Script
             const params = new URLSearchParams();
-            params.append('action', 'handback');
+            params.append('action', 'hand-back');
             params.append('trainSet', trainSet);
             params.append('handBackSheet', handBackSheet);
             if (remarks) params.append('remarks', remarks);
@@ -674,12 +699,12 @@
             
             if (result.status === 'success') {
                 // Show success message
-                showStatusMessage('completionStatus', 
-                    `Maintenance completed for ${trainSet}. Hand back recorded at ${formatDateTime(new Date(result.data.endTime))}.`, 
+                showStatusMessage('hand-backStatus', 
+                    `Maintenance completed for ${trainSet}. Hand-Back recorded at ${formatDateTime(new Date(result.data.endTime))}.`, 
                     'success');
                 
                 // Reset form
-                resetForm('completionForm');
+                resetForm('hand-backForm');
                 
                 // Update the maintenance trains cache
                 maintenanceTrainsCache = maintenanceTrainsCache.filter(train => train.TrainSet !== trainSet);
@@ -688,12 +713,12 @@
                 populateMaintenanceTrains();
                 
             } else {
-                throw new Error(result.data || 'Failed to record hand back');
+                throw new Error(result.data || 'Failed to record hand-back');
             }
         } catch (error) {
-            console.error('Error submitting completion:', error);
-            showStatusMessage('completionStatus', 
-                error.message || 'Failed to submit completion. Please try again.', 
+            console.error('Error submitting hand-back:', error);
+            showStatusMessage('hand-backStatus', 
+                error.message || 'Failed to submit hand-back. Please try again.', 
                 'error');
         } finally {
             // Reset button state
@@ -799,10 +824,10 @@
     // Reset form
     function resetForm(formId) {
         document.getElementById(formId).reset();
-        const statusElement = formId === 'handoverForm' ? 'handoverStatus' : 'completionStatus';
+        const statusElement = formId === 'hand-overForm' ? 'hand-overStatus' : 'hand-backStatus';
         document.getElementById(statusElement).style.display = 'none';
         
-        if (formId === 'handoverForm') {
+        if (formId === 'hand-overForm') {
             document.getElementById('workOrderDisplay').style.display = 'none';
         }
     }

@@ -189,10 +189,10 @@
             color: var(--gray);
         }
         
-        .active { border-color: var(--accent1); }
         .in-service { border-color: var(--primary); }
-        .maintenance { border-color: var(--accent2); }
+        .in-maintenance { border-color: var(--accent2); }
         .non-active { border-color: var(--secondary); }
+        .detained { border-color: var(--accent3); }
         
         .trainset-grid {
             display: grid;
@@ -235,10 +235,10 @@
             line-height: 1.3;
         }
         
-        .status-active { background: #ebf8f2; color: var(--accent1); }
         .status-in-service { background: #ebf4ff; color: var(--primary); }
-        .status-maintenance { background: #fffaf0; color: var(--accent2); }
+        .status-in-maintenance { background: #fffaf0; color: var(--accent2); }
         .status-non-active { background: #fff5f5; color: var(--secondary); }
+        .status-detained { background: #f3ebff; color: var(--accent3); }
         
         .last-updated {
             font-size: 0.8rem;
@@ -409,27 +409,27 @@
             </p>
             
             <div class="status-summary">
-                <div class="summary-card active">
-                    <h3>Active</h3>
-                    <div class="value" id="activeCount">--</div>
-                    <div class="change" id="activeChange">Loading...</div>
-                </div>
-                <div class="summary-card in-service">
-                    <h3>In Service</h3>
-                    <div class="value" id="inServiceCount">--</div>
-                    <div class="change" id="inServiceChange">Loading...</div>
-                </div>
-                <div class="summary-card maintenance">
-                    <h3>Maintenance</h3>
-                    <div class="value" id="maintenanceCount">--</div>
-                    <div class="change" id="maintenanceChange">Loading...</div>
-                </div>
-                <div class="summary-card non-active">
-                    <h3>Non-Active</h3>
-                    <div class="value" id="nonActiveCount">--</div>
-                    <div class="change" id="nonActiveChange">Loading...</div>
-                </div>
-            </div>
+    <div class="summary-card in-service">
+        <h3>In Service</h3>
+        <div class="value" id="inServiceCount">--</div>
+        <div class="change" id="inServiceChange">--</div>
+    </div>
+    <div class="summary-card in-maintenance">
+        <h3>In Maintenance</h3>
+        <div class="value" id="maintenanceCount">--</div>
+        <div class="change" id="maintenanceChange">--</div>
+    </div>
+    <div class="summary-card non-active">
+        <h3>Non-Active</h3>
+        <div class="value" id="nonActiveCount">--</div>
+        <div class="change" id="nonActiveChange">--</div>
+    </div>
+    <div class="summary-card detained">
+        <h3>Detained</h3>
+        <div class="value" id="detainedCount">--</div>
+        <div class="change" id="detainedChange">--</div>
+    </div>
+</div>
             
             <h2 style="margin-bottom: 0.75rem; font-size: 1.2rem;">SCS Sets</h2>
             <div class="trainset-grid" id="trainsetGrid">
@@ -487,87 +487,84 @@
         }
         
         // Process the data from the API
-        function processData(apiData) {
-            trainsets = [];
-            const counts = {
-                active: 0,
-                inService: 0,
-                maintenance: 0,
-                nonActive: 0
-            };
-            
-            apiData.forEach(item => {
-                let status = item.Status ? item.Status.toLowerCase().replace(' ', '-') : 'unknown';
-                if (status === 'operational') status = 'active';
-                if (status === 'out-of-service') status = 'non-active';
-                
-                const isInService = item.InService && item.InService.toString().toLowerCase() === 'true';
-                
-                trainsets.push({
-                    id: item.ID || 'Unknown',
-                    status: status,
-                    inService: isInService,
-                    lastUpdated: item.LastUpdated
-                });
-                
-                // Update counts
-                if (status === 'active') {
-                    counts.active++;
-                    if (isInService) counts.inService++;
-                } else if (status === 'maintenance') {
-                    counts.maintenance++;
-                } else if (status === 'non-active') {
-                    counts.nonActive++;
-                }
-            });
-            
-            // Update summary cards
-            document.getElementById('activeCount').textContent = counts.active;
-            document.getElementById('inServiceCount').textContent = counts.inService;
-            document.getElementById('maintenanceCount').textContent = counts.maintenance;
-            document.getElementById('nonActiveCount').textContent = counts.nonActive;
-            
-            // Calculate changes from previous data if available
-            if (previousData) {
-                updateChangeIndicators(counts);
-            } else {
-                // If no previous data, just show "Initial load"
-                document.getElementById('activeChange').textContent = 'Initial load';
-                document.getElementById('inServiceChange').textContent = 'Initial load';
-                document.getElementById('maintenanceChange').textContent = 'Initial load';
-                document.getElementById('nonActiveChange').textContent = 'Initial load';
-            }
-            
-            // Render train sets
-            renderTrainsets();
+function processData(apiData) {
+    trainsets = [];
+    const counts = {
+        inService: 0,
+        inMaintenance: 0,
+        nonActive: 0,
+        detained: 0
+    };
+    
+    apiData.forEach(item => {
+        // Normalize status to our 4 standard statuses
+        let status = item.Status ? item.Status.toLowerCase().replace(/\s+/g, '-') : 'unknown';
+        
+        // Map various statuses to our standard ones
+        if (status === 'operational' || status === 'active' || status === 'in-service' || (item.InService && item.InService.toString().toLowerCase() === 'true')) {
+            status = 'in-service';
+            counts.inService++;
+        } else if (status === 'maintenance' || status === 'in-maintenance') {
+            status = 'in-maintenance';
+            counts.inMaintenance++;
+        } else if (status === 'non-active' || status === 'out-of-service') {
+            status = 'non-active';
+            counts.nonActive++;
+        } else if (status === 'detained') {
+            status = 'detained';
+            counts.detained++;
+        } else {
+            // Default to non-active for unknown statuses
+            status = 'non-active';
+            counts.nonActive++;
         }
         
+        trainsets.push({
+            id: item.ID || 'Unknown',
+            status: status,
+            lastUpdated: item.LastUpdated
+        });
+    });
+    
+    // Update summary cards
+    document.getElementById('inServiceCount').textContent = counts.inService;
+    document.getElementById('maintenanceCount').textContent = counts.inMaintenance;
+    document.getElementById('nonActiveCount').textContent = counts.nonActive;
+    document.getElementById('detainedCount').textContent = counts.detained;
+    
+    // Calculate changes from previous data if available
+    if (previousData) {
+        updateChangeIndicators(counts);
+    } else {
+        // If no previous data, show dashes
+        document.getElementById('inServiceChange').textContent = '--';
+        document.getElementById('maintenanceChange').textContent = '--';
+        document.getElementById('nonActiveChange').textContent = '--';
+        document.getElementById('detainedChange').textContent = '--';
+    }
+    
+    // Render train sets
+    renderTrainsets();
+}
         // Calculate and display changes from previous data
         function updateChangeIndicators(currentCounts) {
             // Calculate previous counts
             const prevCounts = {
-                active: 0,
                 inService: 0,
-                maintenance: 0,
-                nonActive: 0
+                inMaintenance: 0,
+                nonActive: 0,
+                detained: 0
             };
             
             previousData.forEach(trainset => {
-                if (trainset.status === 'active') {
-                    prevCounts.active++;
-                    if (trainset.inService) prevCounts.inService++;
-                } else if (trainset.status === 'maintenance') {
-                    prevCounts.maintenance++;
-                } else if (trainset.status === 'non-active') {
-                    prevCounts.nonActive++;
-                }
+                prevCounts[trainset.status]++;
             });
             
             // Update change indicators
-            updateChangeIndicator('active', currentCounts.active, prevCounts.active);
             updateChangeIndicator('inService', currentCounts.inService, prevCounts.inService);
-            updateChangeIndicator('maintenance', currentCounts.maintenance, prevCounts.maintenance);
+            updateChangeIndicator('maintenance', currentCounts.inMaintenance, prevCounts.inMaintenance);
             updateChangeIndicator('nonActive', currentCounts.nonActive, prevCounts.nonActive);
+            updateChangeIndicator('detained', currentCounts.detained, prevCounts.detained);
         }
         
         function updateChangeIndicator(type, current, previous) {
@@ -606,14 +603,17 @@
                 
                 // Convert status for display
                 switch(trainset.status) {
-                    case 'active':
-                        statusDisplay = trainset.inService ? 'In Service' : 'Active';
+                    case 'in-service':
+                        statusDisplay = 'In Service';
                         break;
-                    case 'maintenance':
-                        statusDisplay = 'Maintenance';
+                    case 'in-maintenance':
+                        statusDisplay = 'In Maintenance';
                         break;
                     case 'non-active':
                         statusDisplay = 'Non-Active';
+                        break;
+                    case 'detained':
+                        statusDisplay = 'Detained';
                         break;
                     default:
                         statusDisplay = trainset.status.charAt(0).toUpperCase() + trainset.status.slice(1);
