@@ -175,7 +175,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Responsive adjustments */
         @media (max-width: 480px) {
             .login-container {
                 padding: 1.5rem;
@@ -228,8 +227,8 @@
             const statusElement = document.getElementById("status");
             const submitButton = document.querySelector("button[type='submit']");
             const buttonText = document.getElementById("button-text");
+            const username = document.getElementById("username").value;
             
-            // Show loading state
             submitButton.disabled = true;
             buttonText.innerHTML = `<span class="loading-spinner"></span> Logging in...`;
             statusElement.textContent = "";
@@ -239,13 +238,13 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(result => {
-                if (result.trim() === "success") {
+                if (result.status === "success") {
                     statusElement.className = "success";
                     statusElement.textContent = "Login successful! Redirecting...";
                     setTimeout(() => {
-                        window.location.href = "welcome.html";
+                        window.location.href = `welcome.html?username=${encodeURIComponent(username)}&name=${encodeURIComponent(result.name)}&position=${encodeURIComponent(result.position)}`;
                     }, 1000);
                 } else {
                     statusElement.className = "error";

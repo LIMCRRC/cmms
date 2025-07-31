@@ -64,6 +64,39 @@
             margin-bottom: 0.5rem;
         }
         
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            background-color: rgba(43, 108, 176, 0.1);
+            border-radius: 6px;
+        }
+
+        .user-avatar {
+            margin-right: 0.75rem;
+        }
+
+        .user-avatar i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .user-details {
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+        }
+
+        .user-position {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+        
         .section-header {
             display: flex;
             align-items: center;
@@ -268,7 +301,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Responsive adjustments */
         @media (max-width: 1200px) {
             .trainset-grid {
                 grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -297,6 +329,10 @@
                 padding: 0.75rem;
                 border-right: none;
                 border-bottom: 1px solid #e2e8f0;
+            }
+            
+            .user-info {
+                margin-bottom: 1rem;
             }
             
             .main-content {
@@ -331,7 +367,34 @@
             <h2>SCS Dashboard</h2>
         </div>
         
-        <!-- Maintenance Section -->
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="user-details">
+                <div class="user-name" id="loggedInName">Guest</div>
+                <div class="user-position" id="loggedInPosition">Maintenance Staff</div>
+            </div>
+        </div>
+        
+        <!-- Added Refresh and Logout buttons together below user info -->
+        <div class="sidebar-section">
+            <ul class="options-list">
+                <li class="option-item">
+                    <a href="#" class="option-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh Data</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="login.html" class="option-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
         <div class="sidebar-section">
             <div class="section-header">
                 <i class="fas fa-tools"></i>
@@ -359,7 +422,6 @@
             </ul>
         </div>
         
-        <!-- Status Section -->
         <div class="sidebar-section">
             <div class="section-header">
                 <i class="fas fa-chart-line"></i>
@@ -409,27 +471,27 @@
             </p>
             
             <div class="status-summary">
-    <div class="summary-card in-service">
-        <h3>In Service</h3>
-        <div class="value" id="inServiceCount">--</div>
-        <div class="change" id="inServiceChange">--</div>
-    </div>
-    <div class="summary-card in-maintenance">
-        <h3>In Maintenance</h3>
-        <div class="value" id="maintenanceCount">--</div>
-        <div class="change" id="maintenanceChange">--</div>
-    </div>
-    <div class="summary-card non-active">
-        <h3>Non-Active</h3>
-        <div class="value" id="nonActiveCount">--</div>
-        <div class="change" id="nonActiveChange">--</div>
-    </div>
-    <div class="summary-card detained">
-        <h3>Detained</h3>
-        <div class="value" id="detainedCount">--</div>
-        <div class="change" id="detainedChange">--</div>
-    </div>
-</div>
+                <div class="summary-card in-service">
+                    <h3>In Service</h3>
+                    <div class="value" id="inServiceCount">--</div>
+                    <div class="change" id="inServiceChange">--</div>
+                </div>
+                <div class="summary-card in-maintenance">
+                    <h3>In Maintenance</h3>
+                    <div class="value" id="maintenanceCount">--</div>
+                    <div class="change" id="maintenanceChange">--</div>
+                </div>
+                <div class="summary-card non-active">
+                    <h3>Non-Active</h3>
+                    <div class="value" id="nonActiveCount">--</div>
+                    <div class="change" id="nonActiveChange">--</div>
+                </div>
+                <div class="summary-card detained">
+                    <h3>Detained</h3>
+                    <div class="value" id="detainedCount">--</div>
+                    <div class="change" id="detainedChange">--</div>
+                </div>
+            </div>
             
             <h2 style="margin-bottom: 0.75rem; font-size: 1.2rem;">SCS Sets</h2>
             <div class="trainset-grid" id="trainsetGrid">
@@ -443,23 +505,28 @@
     </div>
 
     <script>
-        // Configuration - Replace with your Google Apps Script Web App URL
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwvd4qbZr0e5J2qzQzODbcVf89bKST1Jppz0Ukj9zj8HMztkOrRywYWUfwatwImyWJh8A/exec';
-        const REFRESH_INTERVAL = 300000; // 5 minutes in milliseconds
+        const REFRESH_INTERVAL = 300000;
         
-        // Global variables to store data
         let trainsets = [];
         let previousData = null;
         let lastFetchTime = null;
         
-        // Display current date and time in compact format with year
+        function getUrlParameter(name) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+            const results = regex.exec(window.location.href);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+        
         function updateDateTime() {
             const now = new Date();
             document.getElementById('currentDateTime').textContent = 
                 `${now.getDate()} ${now.toLocaleString('default', { month: 'short' })} ${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         }
         
-        // Fetch data from Google Apps Script
         async function fetchData() {
             try {
                 document.getElementById('loadingIndicator').style.display = 'inline';
@@ -473,7 +540,6 @@
                 const data = await response.json();
                 processData(data);
                 
-                // Store the current data as previous data for next comparison
                 previousData = trainsets;
                 lastFetchTime = new Date();
                 
@@ -486,69 +552,60 @@
             }
         }
         
-        // Process the data from the API
-function processData(apiData) {
-    trainsets = [];
-    const counts = {
-        inService: 0,
-        inMaintenance: 0,
-        nonActive: 0,
-        detained: 0
-    };
-    
-    apiData.forEach(item => {
-        // Normalize status to our 4 standard statuses
-        let status = item.Status ? item.Status.toLowerCase().replace(/\s+/g, '-') : 'unknown';
-        
-        // Map various statuses to our standard ones
-        if (status === 'operational' || status === 'active' || status === 'in-service' || (item.InService && item.InService.toString().toLowerCase() === 'true')) {
-            status = 'in-service';
-            counts.inService++;
-        } else if (status === 'maintenance' || status === 'in-maintenance') {
-            status = 'in-maintenance';
-            counts.inMaintenance++;
-        } else if (status === 'non-active' || status === 'out-of-service') {
-            status = 'non-active';
-            counts.nonActive++;
-        } else if (status === 'detained') {
-            status = 'detained';
-            counts.detained++;
-        } else {
-            // Default to non-active for unknown statuses
-            status = 'non-active';
-            counts.nonActive++;
+        function processData(apiData) {
+            trainsets = [];
+            const counts = {
+                inService: 0,
+                inMaintenance: 0,
+                nonActive: 0,
+                detained: 0
+            };
+            
+            apiData.forEach(item => {
+                let status = item.Status ? item.Status.toLowerCase().replace(/\s+/g, '-') : 'unknown';
+                
+                if (status === 'operational' || status === 'active' || status === 'in-service' || (item.InService && item.InService.toString().toLowerCase() === 'true')) {
+                    status = 'in-service';
+                    counts.inService++;
+                } else if (status === 'maintenance' || status === 'in-maintenance') {
+                    status = 'in-maintenance';
+                    counts.inMaintenance++;
+                } else if (status === 'non-active' || status === 'out-of-service') {
+                    status = 'non-active';
+                    counts.nonActive++;
+                } else if (status === 'detained') {
+                    status = 'detained';
+                    counts.detained++;
+                } else {
+                    status = 'non-active';
+                    counts.nonActive++;
+                }
+                
+                trainsets.push({
+                    id: item.ID || 'Unknown',
+                    status: status,
+                    lastUpdated: item.LastUpdated
+                });
+            });
+            
+            document.getElementById('inServiceCount').textContent = counts.inService;
+            document.getElementById('maintenanceCount').textContent = counts.inMaintenance;
+            document.getElementById('nonActiveCount').textContent = counts.nonActive;
+            document.getElementById('detainedCount').textContent = counts.detained;
+            
+            if (previousData) {
+                updateChangeIndicators(counts);
+            } else {
+                document.getElementById('inServiceChange').textContent = '--';
+                document.getElementById('maintenanceChange').textContent = '--';
+                document.getElementById('nonActiveChange').textContent = '--';
+                document.getElementById('detainedChange').textContent = '--';
+            }
+            
+            renderTrainsets();
         }
         
-        trainsets.push({
-            id: item.ID || 'Unknown',
-            status: status,
-            lastUpdated: item.LastUpdated
-        });
-    });
-    
-    // Update summary cards
-    document.getElementById('inServiceCount').textContent = counts.inService;
-    document.getElementById('maintenanceCount').textContent = counts.inMaintenance;
-    document.getElementById('nonActiveCount').textContent = counts.nonActive;
-    document.getElementById('detainedCount').textContent = counts.detained;
-    
-    // Calculate changes from previous data if available
-    if (previousData) {
-        updateChangeIndicators(counts);
-    } else {
-        // If no previous data, show dashes
-        document.getElementById('inServiceChange').textContent = '--';
-        document.getElementById('maintenanceChange').textContent = '--';
-        document.getElementById('nonActiveChange').textContent = '--';
-        document.getElementById('detainedChange').textContent = '--';
-    }
-    
-    // Render train sets
-    renderTrainsets();
-}
-        // Calculate and display changes from previous data
         function updateChangeIndicators(currentCounts) {
-            // Calculate previous counts
             const prevCounts = {
                 inService: 0,
                 inMaintenance: 0,
@@ -560,7 +617,6 @@ function processData(apiData) {
                 prevCounts[trainset.status]++;
             });
             
-            // Update change indicators
             updateChangeIndicator('inService', currentCounts.inService, prevCounts.inService);
             updateChangeIndicator('maintenance', currentCounts.inMaintenance, prevCounts.inMaintenance);
             updateChangeIndicator('nonActive', currentCounts.nonActive, prevCounts.nonActive);
@@ -584,7 +640,6 @@ function processData(apiData) {
             }
         }
         
-        // Render train sets
         function renderTrainsets() {
             const grid = document.getElementById('trainsetGrid');
             grid.innerHTML = '';
@@ -601,7 +656,6 @@ function processData(apiData) {
                 const statusClass = `status-${trainset.status}`;
                 let statusDisplay = '';
                 
-                // Convert status for display
                 switch(trainset.status) {
                     case 'in-service':
                         statusDisplay = 'In Service';
@@ -629,28 +683,35 @@ function processData(apiData) {
             });
         }
         
-        // Format time for display in a compact way including year
         function formatCompactDateTimeWithYear(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
             const day = date.getDate();
             const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear().toString().slice(-2); // Last 2 digits of year
+            const year = date.getFullYear().toString().slice(-2);
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             
             return `${day} ${month} '${year} ${hours}:${minutes}`;
         }
         
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             updateDateTime();
             fetchData();
             
-            // Update time every second
-            setInterval(updateDateTime, 1000);
+            const name = getUrlParameter('name') || getUrlParameter('username') || 'Guest';
+            const position = getUrlParameter('position') || 'Maintenance Staff';
             
-            // Refresh data at specified interval
+            document.getElementById('loggedInName').textContent = name;
+            document.getElementById('loggedInPosition').textContent = position;
+            
+            // Add refresh button event listener
+            document.getElementById('refreshBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                fetchData();
+            });
+            
+            setInterval(updateDateTime, 1000);
             setInterval(fetchData, REFRESH_INTERVAL);
         });
     </script>
