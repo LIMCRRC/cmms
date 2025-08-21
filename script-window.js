@@ -1,7 +1,7 @@
 // ---------- Configuration ----------
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby86686RmanbGiFkozppb4ArhxzGCqo91KBPlYWgsCBtu8wt4IJE94oOhhP0wm7hPoe/exec'; // <-- Replace with your deployed web app URL
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby86686RmanbGiFkozppb4ArhxzGCqo91KBPlYWgsCBtu8wt4IJE94oOhhP0wm7hPoe/exec';
 
-// glass config (same as your original)
+// Glass configuration for each carriage type
 const carriageGlassConfig = {
   'MC1': ['DLD','DL','W','DR','DRD','DPD','D1/R','D1/L','D2/R','D2/L','WL1E','WR1B','WR1T','WL2T','WL2B','WR2N','D3/R','D3/L','D4/R','D4/L','WL3N','WR3B','WR3T','WL4T','WL4B','WR4E','D5/R','D5/L','D6/R','D6/L','WL5S','WR5SB','WR5ST'],
   'T1': ['WL1ST','WL1SB','WR1S','D1/R','D1/L','D2/R','D2/L','WL2E','WR2B','WR2T','WL3T','WL3B','WR3N','D3/R','D3/L','D4/R','D4/L','WL4N','WR4B','WR4T','WL5T','WL5B','WR5E','D5/R','D5/L','D6/R','D6/L','WL6S','WR6SB','WR6ST'],
@@ -11,257 +11,479 @@ const carriageGlassConfig = {
   'MC2': ['DLD','DL','W','DR','DRD','DPD','D1/R','D1/L','D2/R','D2/L','WL1E','WR1B','WR1T','WL2T','WL2B','WR2N','D3/R','D3/L','D4/R','D4/L','WL3N','WR3B','WR3T','WL4T','WL4B','WR4E','D5/R','D5/L','D6/R','D6/L','WL5S','WR5SB','WR5ST']
 };
 
-const statusCycle = ['normal','damaged','repaired','water'];
+const statusOptions = [
+  { value: 'normal', label: 'Normal', color: 'green' },
+  { value: 'damaged', label: 'Damaged', color: 'red' },
+  { value: 'repaired', label: 'Repaired', color: 'orange' },
+  { value: 'water', label: 'Water Issue', color: 'blue' }
+];
 
-// ---------- State & DOM ----------
+let pendingUpdates = {};
 let currentTrain = null;
 let currentCarriage = null;
 let trainData = {};
 
+// DOM Elements
 const trainSelect = document.getElementById('trainSelect');
 const carriageTabs = document.getElementById('carriageTabs');
 const glassGrid = document.getElementById('glassGrid');
 const trainNotes = document.getElementById('trainNotes');
 const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
 const exportBtn = document.getElementById('exportBtn');
 const statusMessage = document.getElementById('statusMessage');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingText = document.getElementById('loadingText');
+const summaryCards = document.getElementById('summaryCards');
 
-// ---------- User Info Functions ----------
-function getUrlParameter(name) {
-    name = name.replace(/[\[\]]/g, '\\$&');
-    const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
-    const results = regex.exec(window.location.href);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
-function updateUserInfo() {
-    // Get user info from localStorage first, then fallback to URL parameters
-    const name = localStorage.getItem('userFullName') || 
-                getUrlParameter('name') || 
-                localStorage.getItem('maintenanceUser') || 
-                'Guest';
-                
-    const position = localStorage.getItem('userActualPosition') || 
-                    getUrlParameter('position') || 
-                    localStorage.getItem('userPosition') || 
-                    'Maintenance Staff';
-    
-    // Update the UI if elements exist
-    const nameElement = document.getElementById('loggedInName');
-    const positionElement = document.getElementById('loggedInPosition');
-    
-    if (nameElement) nameElement.textContent = name;
-    if (positionElement) positionElement.textContent = position;
-}
-
-// ---------- Init ----------
+// ---------- Initialization ----------
 document.addEventListener('DOMContentLoaded', function() {
     initApp();
     updateUserInfo();
 });
 
+// Event Listeners
 saveBtn.addEventListener('click', saveToDatabase);
-loadBtn.addEventListener('click', () => loadFromDatabase(trainSelect.value));
 exportBtn.addEventListener('click', exportCSV);
 trainSelect.addEventListener('change', () => loadTrain(trainSelect.value));
 trainNotes.addEventListener('input', () => {
-  if (trainData) trainData.notes = trainNotes.value;
+    if (trainData) trainData.notes = trainNotes.value;
 });
 
-function initApp(){
-  // Generate T01 → T38
-  for (let i = 1; i <= 38; i++) {
-    const trainId = 'T' + String(i).padStart(2, '0'); // e.g., T01, T02, ...
-    const option = document.createElement('option');
-    option.value = trainId;
-    option.textContent = trainId;
-    trainSelect.appendChild(option);
-  }
+// ---------- Core Functions ----------
+function initApp() {
+    // Generate train options T01-T38
+    for (let i = 1; i <= 38; i++) {
+        const option = document.createElement('option');
+        option.value = `T${String(i).padStart(2, '0')}`;
+        option.textContent = option.value;
+        trainSelect.appendChild(option);
+    }
 
-  const last = localStorage.getItem('lastTrain') || 'T01';
-  trainSelect.value = last;
-  loadTrain(last);
-  // attempt to load from DB on startup (non-blocking)
-  // You can comment this out if you prefer manual load
-  loadFromDatabase(last).catch(()=>{});
+    const lastTrain = localStorage.getItem('lastTrain') || 'T01';
+    trainSelect.value = lastTrain;
+    loadTrain(lastTrain);
+    loadFromDatabase(lastTrain).catch(error => {
+        console.log('No existing data found, starting fresh');
+    });
 }
 
-function loadTrain(trainId){
-  currentTrain = trainId;
-  localStorage.setItem('lastTrain', trainId);
-  trainData = { trainId, notes: '', timestamp: '', carriages: {} };
-  renderCarriageTabs();
-  loadCarriage('MC1');
-  trainNotes.value = '';
-
-  // If localStorage has cached data, restore immediately for snappy UI
-  const cached = localStorage.getItem(`train_${trainId}`);
-  if(cached){
-    try{ const cachedData = JSON.parse(cached); if(cachedData && cachedData.data) cachedRestore(cachedData.data); else cachedRestore(cachedData); }catch(e){ /* ignore */ }
-  }
+function loadTrain(trainId) {
+    currentTrain = trainId;
+    localStorage.setItem('lastTrain', trainId);
+    pendingUpdates[trainId] = pendingUpdates[trainId] || {};
+    trainData = { 
+        trainId, 
+        notes: '', 
+        timestamp: '', 
+        carriages: {}, 
+    };
+    renderCarriageTabs();
+    loadCarriage('MC1');
+    trainNotes.value = '';
 }
 
-function cachedRestore(data){
-  trainData = data;
-  trainNotes.value = trainData.notes || '';
-  loadCarriage(currentCarriage || 'MC1');
+function renderCarriageTabs() {
+    carriageTabs.innerHTML = '';
+    ['MC1','T1','M1','M2','T2','MC2'].forEach(carriage => {
+        const tab = document.createElement('div');
+        tab.className = `carriage-tab ${carriage === 'MC1' ? 'active' : ''}`;
+        tab.textContent = carriage;
+        tab.addEventListener('click', () => loadCarriage(carriage));
+        carriageTabs.appendChild(tab);
+    });
 }
 
-function renderCarriageTabs(){
-  carriageTabs.innerHTML = '';
-  ['MC1','T1','M1','M2','T2','MC2'].forEach(c=>{
-    const tab = document.createElement('div'); tab.className = 'carriage-tab' + (c==='MC1' ? ' active' : ''); tab.textContent = c;
-    tab.onclick = ()=> loadCarriage(c);
-    carriageTabs.appendChild(tab);
-  });
+function loadCarriage(carriage) {
+    currentCarriage = carriage;
+    document.querySelectorAll('.carriage-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = Array.from(document.querySelectorAll('.carriage-tab')).find(t => t.textContent === carriage);
+    if (activeTab) activeTab.classList.add('active');
+
+    glassGrid.innerHTML = '';
+    const glasses = carriageGlassConfig[carriage] || [];
+    
+    glasses.forEach(glass => {
+        // Check for pending updates first, then loaded data
+        const status = pendingUpdates[currentTrain]?.[carriage]?.[glass]?.status || 
+                      trainData.carriages?.[carriage]?.[glass] || 
+                      'normal';
+        
+        const div = document.createElement('div');
+        div.className = `glass-item ${status}`;
+        div.textContent = glass;
+        div.dataset.glass = glass;
+        div.dataset.carriage = carriage;
+
+        // Add repair date if available
+        const repairDate = pendingUpdates[currentTrain]?.[carriage]?.[glass]?.repairDate;
+        if (status === 'repaired' && repairDate) {
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'repair-date';
+            dateSpan.textContent = repairDate;
+            div.appendChild(dateSpan);
+        }
+
+        div.addEventListener('click', () => showStatusPopup(div, carriage, glass));
+        glassGrid.appendChild(div);
+    });
+    
+    updateSummaryCards();
 }
 
-function loadCarriage(carriage){
-  currentCarriage = carriage;
-  document.querySelectorAll('.carriage-tab').forEach(t=>t.classList.remove('active'));
-  const found = [...document.querySelectorAll('.carriage-tab')].find(t=>t.textContent===carriage);
-  if(found) found.classList.add('active');
+function showStatusPopup(element, carriage, glass) {
+    // Remove any existing modal first
+    const oldModal = document.getElementById('glassStatusModal');
+    if (oldModal) document.body.removeChild(oldModal);
 
-  glassGrid.innerHTML = '';
-  const list = carriageGlassConfig[carriage] || [];
-  list.forEach(glass=>{
-    const div = document.createElement('div');
-    const currentStatus = trainData.carriages?.[carriage]?.[glass] || 'normal';
-    div.className = `glass-item ${currentStatus}`;
-    div.textContent = glass;
-    div.dataset.glass = glass;
-    div.dataset.carriage = carriage;
+    // Create modal elements
+    const modal = document.createElement('div');
+    modal.id = 'glassStatusModal';
+    modal.className = 'modal-overlay';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    modalContent.innerHTML = `
+        <h3>Update Status for ${glass}</h3>
+        <div class="form-group">
+            <label for="statusSelect">Status:</label>
+            <select id="statusSelect" class="status-select">
+                ${statusOptions.map(opt => 
+                    `<option value="${opt.value}" ${element.classList.contains(opt.value) ? 'selected' : ''}>
+                        ${opt.label}
+                    </option>`
+                ).join('')}
+            </select>
+        </div>
+        <div class="form-group" id="repairDateGroup">
+            <label for="repairDate">Repair Date:</label>
+            <input type="date" id="repairDate" class="date-input">
+        </div>
+        <div class="modal-buttons">
+            <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+            <button id="saveModalBtn" class="btn btn-primary">Save</button>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
 
-    div.addEventListener('click', ()=>{
-      // cycle status
-      const curr = trainData.carriages?.[carriage]?.[glass] || 'normal';
-      const idx = statusCycle.indexOf(curr);
-      const next = statusCycle[(idx+1) % statusCycle.length];
-      if(!trainData.carriages[carriage]) trainData.carriages[carriage] = {};
-      trainData.carriages[carriage][glass] = next;
+    // Initialize form elements
+    const statusSelect = modalContent.querySelector('#statusSelect');
+    const repairDateGroup = modalContent.querySelector('#repairDateGroup');
+    const repairDateInput = modalContent.querySelector('#repairDate');
+    const today = new Date().toISOString().split('T')[0];
+    repairDateInput.value = today;
+    repairDateGroup.style.display = statusSelect.value === 'repaired' ? 'block' : 'none';
 
-      // set class with small animation using requestAnimationFrame to ensure CSS transition
-      div.className = `glass-item ${next}`;
-
-      // persist to local cache immediately
-      localSave(trainData);
+    // Status change handler
+    statusSelect.addEventListener('change', () => {
+        repairDateGroup.style.display = statusSelect.value === 'repaired' ? 'block' : 'none';
     });
 
-    glassGrid.appendChild(div);
-  });
-}
-
-// ---------- UI helpers ----------
-function showLoading(message){ loadingText.textContent = message || 'Processing...'; loadingOverlay.classList.add('show'); loadingOverlay.setAttribute('aria-hidden','false'); }
-function hideLoading(){ loadingOverlay.classList.remove('show'); loadingOverlay.setAttribute('aria-hidden','true'); }
-
-function showStatusMessage(message, isSuccess=true, timeout=5000){
-  statusMessage.className = 'status-message ' + (isSuccess? 'status-success':'status-error');
-  statusMessage.innerHTML = `<i class="fas ${isSuccess? 'fa-check-circle':'fa-exclamation-circle'}"></i> ${message}`;
-  if(timeout>0){ setTimeout(()=>{ statusMessage.className = 'status-message'; statusMessage.innerHTML = ''; }, timeout); }
-}
-
-// ---------- Local cache helpers ----------
-function localSave(data){
-  try{
-    const payload = { data };
-    localStorage.setItem(`train_${data.trainId}`, JSON.stringify(payload));
-    // also remember top-level lastTrain already done on loadTrain
-  }catch(e){console.warn('Local save failed', e)}
-}
-
-// ---------- Data functions (fetch) ----------
-async function saveToDatabase() {
-  if (!currentTrain) return showStatusMessage('No train selected', false);
-  showLoading('Saving to database...');
-
-  try {
-    trainData.notes = trainNotes.value || '';
-    trainData.timestamp = new Date().toISOString();
-
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: new URLSearchParams({ payload: JSON.stringify(trainData) }) // form-encoded
+    // Save button - THIS WILL DEFINITELY CLOSE THE MODAL
+    modalContent.querySelector('#saveModalBtn').addEventListener('click', () => {
+        const status = statusSelect.value;
+        const repairDate = status === 'repaired' ? repairDateInput.value : null;
+        
+        updateGlassStatus(element, carriage, glass, status, repairDate);
+        
+        // Absolutely remove the modal
+        document.body.classList.remove('modal-open');
+        document.body.removeChild(modal);
     });
 
-    const json = await res.json();
-    if (json && json.success) {
-      localSave(trainData);
-      showStatusMessage('Data saved successfully', true);
-    } else {
-      throw new Error(json.message || 'Unknown server error');
-    }
-  } catch (err) {
-    console.error('Save error', err);
-    showStatusMessage('Failed to save: ' + err.message, false);
-  } finally {
-    hideLoading();
-  }
+    // Cancel button
+    modalContent.querySelector('#cancelBtn').addEventListener('click', () => {
+        document.body.classList.remove('modal-open');
+        document.body.removeChild(modal);
+    });
+
+    // Click outside to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.classList.remove('modal-open');
+            document.body.removeChild(modal);
+        }
+    });
+
+    // Escape key to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.body.classList.remove('modal-open');
+            document.body.removeChild(modal);
+        }
+    });
 }
 
-async function loadFromDatabase(trainId){
-  if(!trainId) return showStatusMessage('No train selected', false);
-  showLoading('Loading from database...');
-  try{
-    // use GET (simple) so you can also test via browser directly
-    const url = `${SCRIPT_URL}?action=load&trainId=${encodeURIComponent(trainId)}`;
-    const res = await fetch(url, { method: 'GET', mode: 'cors' });
-    const json = await res.json();
-    if(json && json.success){
-      if(json.data){
-        trainData = json.data;
-        trainNotes.value = trainData.notes || '';
-        // keep current carriage if available
-        loadCarriage(currentCarriage || 'MC1');
-        localSave(trainData);
-        showStatusMessage(json.message || 'Data loaded successfully', true);
-      } else {
-        // no data for this train
-        trainData = { trainId, notes:'', timestamp:'', carriages:{} };
-        trainNotes.value = '';
-        loadCarriage(currentCarriage || 'MC1');
-        showStatusMessage(json.message || 'No data found for this train', false);
-      }
-    } else {
-      throw new Error((json && json.message) || 'Unknown server error');
+function updateGlassStatus(element, carriage, glass, status, repairDate) {
+    // Update pending changes
+    if (!pendingUpdates[currentTrain]) pendingUpdates[currentTrain] = {};
+    if (!pendingUpdates[currentTrain][carriage]) pendingUpdates[currentTrain][carriage] = {};
+    
+    pendingUpdates[currentTrain][carriage][glass] = {
+        status,
+        repairDate: status === 'repaired' ? repairDate : null,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Update UI
+    element.className = `glass-item ${status}`;
+    element.innerHTML = glass;
+    
+    if (status === 'repaired' && repairDate) {
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'repair-date';
+        dateSpan.textContent = repairDate;
+        element.appendChild(dateSpan);
     }
-  }catch(err){
-    console.error('Load error', err);
-    showStatusMessage('Failed to load data: ' + (err.message || err), false);
-  }finally{ hideLoading(); }
+    
+    updateSummaryCards();
+    localSave();
 }
 
-// ---------- Export CSV ----------
-function exportCSV(){
-  const header = ['Train','Carriage','Glass','Status','Timestamp','Notes'];
-  let csv = header.join(',') + '\n';
+function updateSummaryCards() {
+    const stats = { normal: 0, damaged: 0, repaired: 0, water: 0 };
 
-  for(let i=1;i<=38;i++){
-    const id = `T${String(i).padStart(2,'0')}`;
-    const raw = localStorage.getItem(`train_${id}`);
-    if(!raw) continue;
-    try{
-      const payload = JSON.parse(raw);
-      const data = payload.data || payload;
-      const ts = data.timestamp || '';
-      const notes = (data.notes || '').replace(/"/g,'""');
-      ['MC1','T1','M1','M2','T2','MC2'].forEach(car=>{
-        const glasses = carriageGlassConfig[car] || [];
-        glasses.forEach(g=>{
-          const status = (data.carriages?.[car]?.[g]) || 'normal';
-          csv += `${id},${car},${g},${status},${ts},"${notes}"\n`;
+    // Count from both loaded data and pending updates
+    Object.entries(trainData.carriages || {}).forEach(([carriage, glasses]) => {
+        Object.values(glasses).forEach(status => {
+            stats[status]++;
         });
-      });
-    }catch(e){console.warn('Skipping malformed local data for', id);}
-  }
+    });
 
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `glass_status_${new Date().toISOString().split('T')[0]}.csv`; document.body.appendChild(a); a.click(); a.remove();
-  showStatusMessage('CSV exported successfully', true);
+    Object.entries(pendingUpdates[currentTrain] || {}).forEach(([carriage, glasses]) => {
+        Object.values(glasses).forEach(({ status }) => {
+            // Only count if this is a new status (not in trainData)
+            if (!trainData.carriages?.[carriage]?.[glass]) {
+                stats[status]++;
+            }
+        });
+    });
+
+    summaryCards.innerHTML = `
+        <div class="summary-card normal">
+            <h3>Normal Windows</h3>
+            <div class="value">${stats.normal}</div>
+        </div>
+        <div class="summary-card damaged">
+            <h3>Damaged Windows</h3>
+            <div class="value">${stats.damaged}</div>
+        </div>
+        <div class="summary-card repaired">
+            <h3>Repaired Windows</h3>
+            <div class="value">${stats.repaired}</div>
+        </div>
+        <div class="summary-card water">
+            <h3>Water Issues</h3>
+            <div class="value">${stats.water}</div>
+        </div>
+    `;
+}
+
+// ---------- Data Management ----------
+function localSave() {
+    try {
+        const payload = {
+            trainData,
+            pendingUpdates
+        };
+        localStorage.setItem(`train_${currentTrain}`, JSON.stringify(payload));
+    } catch (e) {
+        console.error('Local storage save failed', e);
+    }
+}
+
+async function saveToDatabase() {
+    if (!currentTrain) {
+        showStatusMessage('No train selected', false);
+        return;
+    }
+
+    showLoading('Saving to database...');
+    try {
+        trainData.notes = trainNotes.value || '';
+        trainData.timestamp = new Date().toISOString();
+
+        // Prepare only the pending updates to send
+        const updatesToSend = {
+            trainId: currentTrain,
+            notes: trainData.notes,
+            updates: pendingUpdates[currentTrain] || {}
+        };
+
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ payload: JSON.stringify(updatesToSend) })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result?.success) {
+            // Merge pending updates into trainData
+            Object.entries(pendingUpdates[currentTrain] || {}).forEach(([carriage, glasses]) => {
+                if (!trainData.carriages[carriage]) trainData.carriages[carriage] = {};
+                Object.entries(glasses).forEach(([glass, { status }]) => {
+                    trainData.carriages[carriage][glass] = status;
+                });
+            });
+            
+            // Clear pending updates for this train
+            pendingUpdates[currentTrain] = {};
+            
+            showStatusMessage('Data saved successfully', true, 3000);
+            localSave();
+        } else {
+            throw new Error(result?.message || 'Server error');
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        showStatusMessage(`Save failed: ${error.message}`, false, 5000);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function loadFromDatabase(trainId) {
+    if (!trainId) {
+        showStatusMessage('No train selected', false);
+        return;
+    }
+
+    showLoading('Loading data...');
+    try {
+        const url = `${SCRIPT_URL}?action=load&trainId=${encodeURIComponent(trainId)}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result?.success) {
+            if (result.data) {
+                trainData = result.data;
+                trainNotes.value = trainData.notes || '';
+                loadCarriage(currentCarriage || 'MC1');
+                localSave();
+                showStatusMessage('Data loaded successfully', true, 3000);
+            } else {
+                trainData = { 
+                    trainId, 
+                    notes: '', 
+                    timestamp: '', 
+                    carriages: {}
+                };
+                trainNotes.value = '';
+                loadCarriage(currentCarriage || 'MC1');
+                showStatusMessage('No data found for this train', false, 3000);
+            }
+        } else {
+            throw new Error(result?.message || 'Server error');
+        }
+    } catch (error) {
+        console.error('Load error:', error);
+        showStatusMessage(`Load failed: ${error.message}`, false, 5000);
+    } finally {
+        hideLoading();
+    }
+}
+
+function exportCSV() {
+    const header = ['Train','Carriage','Glass','Status','Timestamp','Notes','RepairDate'];
+    let csv = header.join(',') + '\n';
+
+    for (let i = 1; i <= 38; i++) {
+        const trainId = `T${String(i).padStart(2, '0')}`;
+        const cached = localStorage.getItem(`train_${trainId}`);
+        if (!cached) continue;
+
+        try {
+            const { trainData, pendingUpdates } = JSON.parse(cached);
+            const timestamp = trainData?.timestamp || '';
+            const notes = (trainData?.notes || '').replace(/"/g, '""');
+
+            ['MC1','T1','M1','M2','T2','MC2'].forEach(carriage => {
+                (carriageGlassConfig[carriage] || []).forEach(glass => {
+                    // Check pending updates first, then loaded data
+                    const status = pendingUpdates?.[trainId]?.[carriage]?.[glass]?.status || 
+                                 trainData?.carriages?.[carriage]?.[glass] || 
+                                 'normal';
+                    const repairDate = pendingUpdates?.[trainId]?.[carriage]?.[glass]?.repairDate || '';
+                    csv += `${trainId},${carriage},${glass},${status},${timestamp},"${notes}","${repairDate}"\n`;
+                });
+            });
+        } catch (e) {
+            console.warn(`Skipping malformed data for ${trainId}`, e);
+        }
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `window_status_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showStatusMessage('CSV exported successfully', true, 3000);
+}
+
+// ---------- UI Utilities ----------
+function showLoading(message) {
+    loadingText.textContent = message || 'Processing...';
+    loadingOverlay.style.display = 'flex';
+    setTimeout(() => loadingOverlay.style.opacity = '1', 10);
+}
+
+function hideLoading() {
+    loadingOverlay.style.opacity = '0';
+    setTimeout(() => loadingOverlay.style.display = 'none', 300);
+}
+
+function showStatusMessage(message, isSuccess = true, timeout = 3000) {
+    statusMessage.className = `status-message ${isSuccess ? 'status-success' : 'status-error'}`;
+    statusMessage.innerHTML = `
+        <i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+        ${message}
+    `;
+    statusMessage.style.display = 'block';
+    
+    if (timeout > 0) {
+        setTimeout(() => {
+            statusMessage.style.display = 'none';
+        }, timeout);
+    }
+}
+
+// ---------- User Info ----------
+function updateUserInfo() {
+    const name = localStorage.getItem('userFullName') || 
+                 getUrlParameter('name') || 
+                 'Maintenance Staff';
+    
+    const position = localStorage.getItem('userActualPosition') || 
+                    getUrlParameter('position') || 
+                    'Technician';
+
+    document.getElementById('loggedInName').textContent = name;
+    document.getElementById('loggedInPosition').textContent = position;
+}
+
+function getUrlParameter(name) {
+    name = name.replace(/[[]]/g, '\\$&');
+    const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
+    const results = regex.exec(window.location.href);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }

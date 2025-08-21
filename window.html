@@ -103,7 +103,6 @@
             </ul>
         </div>
 
-        <!-- New Status Section -->
         <div class="sidebar-section">
             <div class="section-header">
                 <i class="fas fa-clipboard-list"></i>
@@ -116,12 +115,58 @@
                         <span>Window Glass</span>
                     </a>
                 </li>
+                <li class="option-item">
+                    <a href="hvac.html" class="option-btn" id="hvacBtn">
+                        <i class="fas fa-fan"></i>
+                        <span>HVAC</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="aps.html" class="option-btn" id="apsBtn">
+                        <i class="fas fa-door-open"></i>
+                        <span>APS</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="traction.html" class="option-btn" id="tractionBtn">
+                        <i class="fas fa-bolt"></i>
+                        <span>Traction</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="bogie.html" class="option-btn" id="bogieBtn">
+                        <i class="fas fa-cogs"></i>
+                        <span>Bogie</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="lighting.html" class="option-btn" id="lightingBtn">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Lighting</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="pis.html" class="option-btn" id="pisBtn">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>PIS</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="brake.html" class="option-btn" id="brakeBtn">
+                        <i class="fas fa-stop-circle"></i>
+                        <span>Brake</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
 
   <div class="main-content">
     <h1>Window Glass Status Management</h1>
+
+    <div class="summary-cards" id="summaryCards">
+      <!-- Will be populated by JavaScript -->
+    </div>
 
     <div class="card">
       <div class="card-header"><h2>Train Selection</h2></div>
@@ -142,13 +187,22 @@
     </div>
 
     <div class="card">
+      <div class="card-header"><h2>Status Legend</h2></div>
+      <div class="status-legend">
+        <div class="status-badge normal"><i class="fas fa-square"></i> Normal</div>
+        <div class="status-badge damaged"><i class="fas fa-square"></i> Damaged</div>
+        <div class="status-badge repaired"><i class="fas fa-square"></i> Repaired</div>
+        <div class="status-badge water"><i class="fas fa-square"></i> Water Issue</div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="card-header"><h2>Notes</h2></div>
       <div class="form-group">
         <textarea id="trainNotes" rows="4" placeholder="Add any additional notes..."></textarea>
       </div>
       <div class="btn-group">
         <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Save to Database</button>
-        <button id="loadBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Load from Database</button>
         <button id="exportBtn" class="btn btn-success"><i class="fas fa-file-export"></i> Export CSV</button>
       </div>
       <div id="statusMessage" class="status-message"></div>
