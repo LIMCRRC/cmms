@@ -172,6 +172,21 @@ h1 {
     font-weight: 700;
 }
 
+.summary-card-header {
+    grid-column: 1 / -1;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.summary-card-header h2 {
+    font-size: 1rem;
+    color: var(--primary-dark);
+    margin: 0;
+}
+
 .card {
     background: white;
     border-radius: 6px;
@@ -395,6 +410,14 @@ textarea {
 .loading-text {
     color: var(--primary-dark);
     font-weight: 600;
+}
+
+.no-data-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray);
+    font-style: italic;
 }
 
 @keyframes spin {

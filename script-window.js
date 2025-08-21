@@ -29,28 +29,62 @@ const carriageTabs = document.getElementById('carriageTabs');
 const glassGrid = document.getElementById('glassGrid');
 const trainNotes = document.getElementById('trainNotes');
 const saveBtn = document.getElementById('saveBtn');
-const exportBtn = document.getElementById('exportBtn');
 const statusMessage = document.getElementById('statusMessage');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingText = document.getElementById('loadingText');
 const summaryCards = document.getElementById('summaryCards');
+const refreshBtn = document.getElementById('refreshBtn');
 
 // ---------- Initialization ----------
 document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-    updateUserInfo();
+    // Show loading overlay when page first loads
+    showLoading('Loading application...');
+    
+    // Initialize the app after a short delay to ensure DOM is fully ready
+    setTimeout(() => {
+        initApp();
+        updateUserInfo();
+        updateSummaryCards(); // Show overall status on page load
+        
+        // Hide loading after initialization is complete
+        setTimeout(() => {
+            hideLoading();
+        }, 500);
+    }, 100);
 });
 
 // Event Listeners
 saveBtn.addEventListener('click', saveToDatabase);
-exportBtn.addEventListener('click', exportCSV);
-trainSelect.addEventListener('change', () => loadTrain(trainSelect.value));
+refreshBtn.addEventListener('click', () => {
+    if (currentTrain) loadFromDatabase(currentTrain);
+    updateSummaryCards(); // Update summary after refresh
+});
+trainSelect.addEventListener('change', () => {
+    if (trainSelect.value) {
+        loadTrain(trainSelect.value);
+    } else {
+        // Clear selection and show overall status
+        currentTrain = null;
+        renderCarriageTabs();
+        clearGlassGrid();
+        trainNotes.value = '';
+        updateSummaryCards();
+    }
+});
 trainNotes.addEventListener('input', () => {
     if (trainData) trainData.notes = trainNotes.value;
 });
 
 // ---------- Core Functions ----------
 function initApp() {
+    // Add a default "Select Train" option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '-- Select Train --';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    trainSelect.appendChild(defaultOption);
+    
     // Generate train options T01-T38
     for (let i = 1; i <= 38; i++) {
         const option = document.createElement('option');
@@ -59,41 +93,60 @@ function initApp() {
         trainSelect.appendChild(option);
     }
 
-    const lastTrain = localStorage.getItem('lastTrain') || 'T01';
-    trainSelect.value = lastTrain;
-    loadTrain(lastTrain);
-    loadFromDatabase(lastTrain).catch(error => {
-        console.log('No existing data found, starting fresh');
-    });
+    // Don't automatically load any train
+    currentTrain = null;
+    
+    // Initialize UI with empty state
+    renderCarriageTabs();
+    clearGlassGrid();
+    trainNotes.value = '';
+}
+
+function clearGlassGrid() {
+    glassGrid.innerHTML = '<div class="no-data-message">Please select a train set to view window status</div>';
 }
 
 function loadTrain(trainId) {
+    if (!trainId) return;
+    
     currentTrain = trainId;
     localStorage.setItem('lastTrain', trainId);
     pendingUpdates[trainId] = pendingUpdates[trainId] || {};
+    
+    // Reset train data while loading
     trainData = { 
         trainId, 
         notes: '', 
         timestamp: '', 
         carriages: {}, 
     };
+    
     renderCarriageTabs();
     loadCarriage('MC1');
     trainNotes.value = '';
+    
+    // Load data from database for the selected train
+    loadFromDatabase(trainId).catch(error => {
+        console.log('No existing data found, starting fresh');
+    });
 }
 
 function renderCarriageTabs() {
     carriageTabs.innerHTML = '';
     ['MC1','T1','M1','M2','T2','MC2'].forEach(carriage => {
         const tab = document.createElement('div');
-        tab.className = `carriage-tab ${carriage === 'MC1' ? 'active' : ''}`;
+        tab.className = `carriage-tab ${carriage === 'MC1' && currentTrain ? 'active' : ''}`;
         tab.textContent = carriage;
-        tab.addEventListener('click', () => loadCarriage(carriage));
+        tab.addEventListener('click', () => {
+            if (currentTrain) loadCarriage(carriage);
+        });
         carriageTabs.appendChild(tab);
     });
 }
 
 function loadCarriage(carriage) {
+    if (!currentTrain) return;
+    
     currentCarriage = carriage;
     document.querySelectorAll('.carriage-tab').forEach(t => t.classList.remove('active'));
     const activeTab = Array.from(document.querySelectorAll('.carriage-tab')).find(t => t.textContent === carriage);
@@ -131,6 +184,8 @@ function loadCarriage(carriage) {
 }
 
 function showStatusPopup(element, carriage, glass) {
+    if (!currentTrain) return;
+    
     // Remove any existing modal first
     const oldModal = document.getElementById('glassStatusModal');
     if (oldModal) document.body.removeChild(oldModal);
@@ -243,26 +298,87 @@ function updateGlassStatus(element, carriage, glass, status, repairDate) {
     localSave();
 }
 
-function updateSummaryCards() {
+function calculateAllTrainStats() {
     const stats = { normal: 0, damaged: 0, repaired: 0, water: 0 };
-
-    // Count from both loaded data and pending updates
-    Object.entries(trainData.carriages || {}).forEach(([carriage, glasses]) => {
-        Object.values(glasses).forEach(status => {
-            stats[status]++;
-        });
+    
+    // Calculate total number of windows across all carriages
+    let totalWindows = 0;
+    Object.values(carriageGlassConfig).forEach(glasses => {
+        totalWindows += glasses.length;
     });
+    
+    // Count from localStorage data for all trains
+    for (let i = 1; i <= 38; i++) {
+        const trainId = `T${String(i).padStart(2, '0')}`;
+        const cached = localStorage.getItem(`train_${trainId}`);
+        if (!cached) {
+            // If no data exists, assume all windows are normal
+            stats.normal += totalWindows;
+            continue;
+        }
 
-    Object.entries(pendingUpdates[currentTrain] || {}).forEach(([carriage, glasses]) => {
-        Object.values(glasses).forEach(({ status }) => {
-            // Only count if this is a new status (not in trainData)
-            if (!trainData.carriages?.[carriage]?.[glass]) {
+        try {
+            const { trainData, pendingUpdates } = JSON.parse(cached);
+            
+            // Count status for each carriage in this train
+            ['MC1','T1','M1','M2','T2','MC2'].forEach(carriage => {
+                (carriageGlassConfig[carriage] || []).forEach(glass => {
+                    // Check pending updates first, then loaded data
+                    const status = pendingUpdates?.[trainId]?.[carriage]?.[glass]?.status || 
+                                 trainData?.carriages?.[carriage]?.[glass] || 
+                                 'normal';
+                    stats[status]++;
+                });
+            });
+        } catch (e) {
+            console.warn(`Skipping malformed data for ${trainId}`, e);
+            // If data is malformed, assume all windows are normal
+            stats.normal += totalWindows;
+        }
+    }
+    
+    return stats;
+}
+
+function updateSummaryCards() {
+    let stats;
+    let title;
+
+    if (!currentTrain) {
+        // Show overall status for all trains
+        stats = calculateAllTrainStats();
+        title = "All Train Sets";
+    } else {
+        // Show status for the selected train only
+        stats = { normal: 0, damaged: 0, repaired: 0, water: 0 };
+        title = `Train ${currentTrain}`;
+
+        // Count from both loaded data and pending updates
+        Object.entries(trainData.carriages || {}).forEach(([carriage, glasses]) => {
+            Object.values(glasses).forEach(status => {
                 stats[status]++;
-            }
+            });
         });
-    });
+
+        // Count pending updates, but avoid double-counting
+        Object.entries(pendingUpdates[currentTrain] || {}).forEach(([carriage, glasses]) => {
+            Object.entries(glasses).forEach(([glass, { status }]) => {
+                // Only count if this is a new status (not in trainData) or different from trainData
+                if (!trainData.carriages?.[carriage]?.[glass] || trainData.carriages[carriage][glass] !== status) {
+                    stats[status]++;
+                    // If we're updating an existing status, decrement the old status count
+                    if (trainData.carriages?.[carriage]?.[glass]) {
+                        stats[trainData.carriages[carriage][glass]]--;
+                    }
+                }
+            });
+        });
+    }
 
     summaryCards.innerHTML = `
+        <div class="summary-card-header">
+            <h2>${title} - Window Status Summary</h2>
+        </div>
         <div class="summary-card normal">
             <h3>Normal Windows</h3>
             <div class="value">${stats.normal}</div>
@@ -340,6 +456,7 @@ async function saveToDatabase() {
             
             showStatusMessage('Data saved successfully', true, 3000);
             localSave();
+            updateSummaryCards(); // Update summary after save
         } else {
             throw new Error(result?.message || 'Server error');
         }
@@ -370,12 +487,14 @@ async function loadFromDatabase(trainId) {
 
         if (result?.success) {
             if (result.data) {
-                trainData = result.data;
+                // Merge the loaded data with our current trainData
+                trainData = { ...trainData, ...result.data };
                 trainNotes.value = trainData.notes || '';
                 loadCarriage(currentCarriage || 'MC1');
                 localSave();
                 showStatusMessage('Data loaded successfully', true, 3000);
             } else {
+                // No data found for this train, start fresh
                 trainData = { 
                     trainId, 
                     notes: '', 
@@ -397,57 +516,14 @@ async function loadFromDatabase(trainId) {
     }
 }
 
-function exportCSV() {
-    const header = ['Train','Carriage','Glass','Status','Timestamp','Notes','RepairDate'];
-    let csv = header.join(',') + '\n';
-
-    for (let i = 1; i <= 38; i++) {
-        const trainId = `T${String(i).padStart(2, '0')}`;
-        const cached = localStorage.getItem(`train_${trainId}`);
-        if (!cached) continue;
-
-        try {
-            const { trainData, pendingUpdates } = JSON.parse(cached);
-            const timestamp = trainData?.timestamp || '';
-            const notes = (trainData?.notes || '').replace(/"/g, '""');
-
-            ['MC1','T1','M1','M2','T2','MC2'].forEach(carriage => {
-                (carriageGlassConfig[carriage] || []).forEach(glass => {
-                    // Check pending updates first, then loaded data
-                    const status = pendingUpdates?.[trainId]?.[carriage]?.[glass]?.status || 
-                                 trainData?.carriages?.[carriage]?.[glass] || 
-                                 'normal';
-                    const repairDate = pendingUpdates?.[trainId]?.[carriage]?.[glass]?.repairDate || '';
-                    csv += `${trainId},${carriage},${glass},${status},${timestamp},"${notes}","${repairDate}"\n`;
-                });
-            });
-        } catch (e) {
-            console.warn(`Skipping malformed data for ${trainId}`, e);
-        }
-    }
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `window_status_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showStatusMessage('CSV exported successfully', true, 3000);
-}
-
 // ---------- UI Utilities ----------
 function showLoading(message) {
     loadingText.textContent = message || 'Processing...';
-    loadingOverlay.style.display = 'flex';
-    setTimeout(() => loadingOverlay.style.opacity = '1', 10);
+    loadingOverlay.classList.add('show');
 }
 
 function hideLoading() {
-    loadingOverlay.style.opacity = '0';
-    setTimeout(() => loadingOverlay.style.display = 'none', 300);
+    loadingOverlay.classList.remove('show');
 }
 
 function showStatusMessage(message, isSuccess = true, timeout = 3000) {
