@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="7-styles-maintenance.css">
 
   <style>
+   <style>
     /* === Extra Styles for Cards and Table === */
 
     /* Summary cards */
@@ -231,7 +232,7 @@
           </a>
         </li>
         <li class="option-item">
-          <a href="0-login.html" class="option-btn">
+          <a href="index.html" class="option-btn">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
           </a>
@@ -382,7 +383,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhQZowOzzO-RSu2KvSucr8fard1lR3EyFd3VtvkJQ796ZNomS6NzUZGEkK33xF-rrz/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxhT84kZVx7cxGnx4xOgRityxr9NyInM2xdTIjJ9IMvb0WuYZwkdEeYK1WRFhC69fScjQ/exec";
 
     // Loading Overlay Functions
     function showLoadingOverlay(message = 'Loading...') {
@@ -510,7 +511,7 @@
     async function loadData() {
       showLoadingOverlay('Loading maintenance data...');
       try {
-        const res = await fetch(`${SCRIPT_URL}?action=getMaintenancePlan`);
+        const res = await fetch(SCRIPT_URL);
         const json = await res.json();
         if (json.success) {
           buildMatrix(json.data);
