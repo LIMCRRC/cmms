@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCS Preventive Maintenance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="7-styles-maintenance.css">
+</head>
+<body>
+
+  <!-- Sidebar Options -->
+  <div class="options-sidebar">
+    <div class="sidebar-header">
+      <h2>SCS Dashboard</h2>
+    </div>
+
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name" id="loggedInName">Loading...</div>
+        <div class="user-position" id="loggedInPosition">Loading...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <ul class="options-list">
+        <li class="option-item">
+          <a href="#" class="option-btn" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i>
+            <span>Refresh Data</span>
+          </a>
+        </li>
+        <li class="option-item">
+          <a href="0-login.html" class="option-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+<!-- Information Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-info-circle"></i>
+        <h3>Information</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item"><a href="1-overview.html" class="option-btn"><i class="fas fa-home"></i><span>Overview</span></a></li>
+        <li class="option-item"><a href="2-completion.html" class="option-btn"><i class="fas fa-check-circle"></i><span>Completion</span></a></li>
+        <li class="option-item"><a href="3-mileage.html" class="option-btn"><i class="fas fa-road"></i><span>Train Mileage</span></a></li>
+        <li class="option-item"><a href="4-failure.html" class="option-btn"><i class="fas fa-exclamation-triangle"></i><span>Mainline Failure</span></a></li>
+        <li class="option-item"><a href="5-unscheduled.html" class="option-btn"><i class="fas fa-calendar-times"></i><span>Unscheduled</span></a></li>
+      </ul>
+    </div>  
+    
+    <!-- Maintenance Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-tools"></i>
+        <h3>Maintenance</h3>
+      </div>
+      <ul class="options-list">
+        <!-- Plan -->
+        <li class="option-item"><a href="plan.html" class="option-btn"><i class="fas fa-calendar-check"></i><span>Plan</span></a></li>
+
+        <!-- Preventive collapsible -->
+        <li class="option-item collapsible">
+          <a href="#" class="option-btn collapse-btn">
+            <i class="fas fa-shield-alt"></i>
+            <span>Preventive</span>
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto;"></i>
+          </a>
+          <ul class="submenu">
+            <li class="option-item"><a href="#" class="option-btn active" id="dashboardBtn"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+            <li class="option-item"><a href="#" class="option-btn" id="handOverBtn"><i class="fas fa-sign-in-alt"></i><span>Hand-Over</span></a></li>
+            <li class="option-item"><a href="#" class="option-btn" id="handBackBtn"><i class="fas fa-sign-out-alt"></i><span>Hand-Back</span></a></li>
+            <li class="option-item"><a href="#" class="option-btn" id="historyBtn"><i class="fas fa-history"></i><span>History</span></a></li>
+          </ul>
+        </li>
+
+        <!-- Corrective collapsible -->
+        <li class="option-item collapsible">
+          <a href="#" class="option-btn collapse-btn">
+            <i class="fas fa-wrench"></i>
+            <span>Corrective</span>
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto;"></i>
+          </a>
+          <ul class="submenu">
+            <li class="option-item"><a href="corrective_open.html" class="option-btn"><i class="fas fa-folder-open"></i><span>Open Item</span></a></li>
+            <li class="option-item"><a href="corrective_history.html" class="option-btn"><i class="fas fa-history"></i><span>History</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+
+ <!-- Status Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-clipboard-list"></i>
+        <h3>Status</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item"><a href="window.html" class="option-btn"><i class="fas fa-window-maximize"></i><span>Window Glass</span></a></li>
+        <li class="option-item"><a href="hvac.html" class="option-btn"><i class="fas fa-fan"></i><span>HVAC</span></a></li>
+        <li class="option-item"><a href="aps.html" class="option-btn"><i class="fas fa-door-open"></i><span>APS</span></a></li>
+        <li class="option-item"><a href="traction.html" class="option-btn"><i class="fas fa-bolt"></i><span>Traction</span></a></li>
+        <li class="option-item"><a href="bogie.html" class="option-btn"><i class="fas fa-cogs"></i><span>Bogie</span></a></li>
+        <li class="option-item"><a href="lighting.html" class="option-btn"><i class="fas fa-lightbulb"></i><span>Lighting</span></a></li>
+        <li class="option-item"><a href="pis.html" class="option-btn"><i class="fas fa-bullhorn"></i><span>PIS</span></a></li>
+        <li class="option-item"><a href="brake.html" class="option-btn"><i class="fas fa-stop-circle"></i><span>Brake</span></a></li>
+      </ul>
+    </div>
+  </div>
+    
+    <div class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboardView">
+            <h1>Preventive Maintenance Dashboard</h1>
+            <p class="welcome-text">
+                Overview of train maintenance status. Last updated: <span id="currentDateTime"></span>
+            </p>
+            
+            <!-- Quick Action Cards -->
+            <div class="quick-actions">
+                <div class="action-card" id="quickHandOver">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <h3>Hand-Over Train</h3>
+                    <p>Initiate maintenance hand-over process</p>
+                </div>
+                <div class="action-card" id="quickHandBack">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <h3>Hand-Back Train</h3>
+                    <p>Complete maintenance and return to service</p>
+                </div>
+                <div class="action-card" id="quickHistory">
+                    <i class="fas fa-history"></i>
+                    <h3>View History</h3>
+                    <p>Review past maintenance records</p>
+                </div>
+            </div>
+            <div class="quick-actions">
+
+  <div class="action-card" id="dailyCard">
+    <h3>Daily Maintenance</h3>
+    <div class="stat-value" id="dailyToday">0</div>
+    <div class="stat-trains" id="dailyTrains"></div>
+  </div>
+  <div class="action-card" id="weeklyCard">
+    <h3>Weekly Maintenance</h3>
+    <div class="stat-value" id="weeklyToday">0</div>
+    <div class="stat-trains" id="weeklyTrains"></div>
+  </div>
+  <div class="action-card" id="monthlyCard">
+    <h3>Monthly Maintenance</h3>
+    <div class="stat-value" id="monthlyToday">0</div>
+    <div class="stat-trains" id="monthlyTrains"></div>
+  </div>
+</div>
+            <!-- Train Status Dashboard Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> Train Status Dashboard</h2>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalTrains">0</div>
+                            <div class="stat-label">Total Trains</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="inService">0</div>
+                            <div class="stat-label">In Service</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="inMaintenance">0</div>
+                            <div class="stat-label">In Maintenance</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="detained">0</div>
+                            <div class="stat-label">Detained</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="nonActive">0</div>
+                            <div class="stat-label">Non-Active</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Filter Controls -->
+                    <div class="status-filters">
+                        <button class="status-filter-btn active" data-status="all">All Trains</button>
+                        <button class="status-filter-btn" data-status="In Service">In Service</button>
+                        <button class="status-filter-btn" data-status="Maintenance">In Maintenance</button>
+                        <button class="status-filter-btn" data-status="Detained">Detained</button>
+                        <button class="status-filter-btn" data-status="Non-Active">Non-Active</button>
+                    </div>
+                    
+                    <!-- Train Cards Grid -->
+                    <div class="train-cards-grid" id="trainCardsGrid">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hand-Over View -->
+        <div id="handOverView" style="display: none;">
+            <div class="operation-header">
+                <a href="#" class="back-btn" id="backFromHandOver">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <h1>Hand-Over for Maintenance</h1>
+            <p class="welcome-text">
+                Record train hand-over for preventive maintenance. Last updated: <span id="handOverDateTime"></span>
+            </p>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-sign-in-alt"></i> Hand-Over Form</h2>
+                </div>
+                
+                <form id="hand-overForm">
+                    <div class="form-group">
+                        <label for="trainSet">Train Set *</label>
+                        <select id="trainSet" class="form-control" required>
+                            <option value="">-- Select a train set --</option>
+                            <!-- Generate options T01-T38 -->
+                            <script>
+                                for (let i = 1; i <= 38; i++) {
+                                    const trainNum = i.toString().padStart(2, '0');
+                                    document.write(`<option value="T${trainNum}">T${trainNum}</option>`);
+                                }
+                            </script>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hand-overSheet">Hand-Over Sheet Number *</label>
+                        <input type="text" id="hand-overSheet" class="form-control" required 
+                               placeholder="Enter hand-over sheet number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maintenanceType">Maintenance Type *</label>
+                        <select id="maintenanceType" class="form-control" required>
+                            <option value="">-- Select maintenance type --</option>
+                            <optgroup label="Daily">
+                                <option value="DA">DA - Daily</option>
+                            </optgroup>
+                            <optgroup label="Weekly">
+                                <option value="DB">DB - Weekly</option>
+                                <option value="DC">DC - Weekly</option>
+                            </optgroup>
+                            <optgroup label="Monthly">
+                                <script>
+                                    for (let i = 1; i <= 12; i++) {
+                                        document.write(`<option value="M${i}">M${i} - Monthly</option>`);
+                                    }
+                                </script>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group">
+    <label for="mileage">Mileage (km) *</label>
+    <input type="number" id="mileage" class="form-control" required 
+           placeholder="Enter current mileage in kilometers">
+</div>
+
+<div class="form-group">
+    <label for="location">Location *</label>
+    <select id="location" class="form-control" required>
+        <option value="">-- Select location --</option>
+        <option value="Sentul">Sentul</option>
+        <option value="T.Malim">T.Malim</option>
+        <option value="Seremban">Seremban</option>
+        <option value="P.Klang">P.Klang</option>
+        <option value="P.Besar">P.Besar</option>
+        <option value="B.Tengah">B.Tengah</option>
+    </select>
+</div>
+                    <div class="form-group">
+                        <label for="hand-overRemarks">Remarks</label>
+                        <textarea id="hand-overRemarks" class="form-control" 
+                                  placeholder="Enter any additional remarks"></textarea>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="button" id="hand-overSubmitBtn" class="btn btn-success">
+                            <i class="fas fa-check"></i> Submit Hand-Over
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('hand-overForm')">
+                            <i class="fas fa-redo"></i> Reset Form
+                        </button>
+                    </div>
+                    
+                    <div id="hand-overStatus" class="status-message"></div>
+                    
+                    <!-- Work Order Display (hidden by default) -->
+                    <div id="workOrderDisplay" class="work-order-display" style="display: none;">
+                        <div class="work-order-header">Generated Work Order:</div>
+                        <div id="workOrderDetails"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Hand-Back View -->
+        <div id="handBackView" style="display: none;">
+            <div class="operation-header">
+                <a href="#" class="back-btn" id="backFromHandBack">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <h1>Hand-Back of Maintenance</h1>
+            <p class="welcome-text">
+                Record completion of maintenance and return train to service. Last updated: <span id="handBackDateTime"></span>
+            </p>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-sign-out-alt"></i> Hand-Back Form</h2>
+                </div>
+                
+                <form id="hand-backForm">
+                    <div class="form-group">
+                        <label for="maintenanceTrainSet">Train Set Under Maintenance *</label>
+                        <select id="maintenanceTrainSet" class="form-control" required>
+                            <option value="">-- Select a train set --</option>
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="handBackSheet">Hand Back Sheet Number *</label>
+                        <input type="text" id="handBackSheet" class="form-control" required 
+                               placeholder="Enter hand back sheet number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hand-backRemarks">Remarks</label>
+                        <textarea id="hand-backRemarks" class="form-control" 
+                                 placeholder="Enter hand-back remarks"></textarea>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="button" id="hand-backSubmitBtn" class="btn btn-success">
+                            <i class="fas fa-check"></i> Submit Hand-Back
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetForm('hand-backForm')">
+                            <i class="fas fa-redo"></i> Reset Form
+                        </button>
+                    </div>
+                    
+                    <div id="hand-backStatus" class="status-message"></div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- History View -->
+        <div id="historyView" style="display: none;">
+            <div class="operation-header">
+                <a href="#" class="back-btn" id="backFromHistory">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            <h1>Maintenance History</h1>
+            <p class="welcome-text">
+                View historical records of maintenance hand-overs and hand-backs. Last updated: <span id="historyDateTime"></span>
+            </p>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Maintenance Records</h2>
+                </div>
+                
+                <div class="history-controls">
+                    <div class="form-group">
+                        <label for="historyFilterTrain">Filter by Train Set</label>
+                        <select id="historyFilterTrain" class="form-control">
+                            <option value="">All Trains</option>
+                            <!-- Will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="historyFilterType">Filter by Maintenance Type</label>
+                        <select id="historyFilterType" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="DA">Daily</option>
+                            <option value="W">Weekly</option>
+                            <option value="M">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="history-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Completion Date</th>
+                                <th>Train Set</th>
+                                <th>Maintenance Type</th>
+                                <th>Hand-Back Sheet</th>
+                                <th>Work Order</th>
+                                <th>Completed By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="7-script-maintenance.js"></script>
+</body>
+</html>

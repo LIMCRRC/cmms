@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unscheduled Work</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="1-styles-main.css">
+
+  <style>
+    /* Compact Chart Containers */
+    .chart-container {
+      width: 90%;
+      max-width: 600px;
+      height: 300px;
+      margin: 20px auto;
+    }
+    /* Optional: Adjust summary cards for better spacing */
+    .dashboard-stats .action-card {
+      flex: 1;
+      min-width: 150px;
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body>
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading unscheduled work data...</div>
+</div>   
+
+ <!-- Records Modal -->
+<div id="recordsModal" class="confirmation-dialog" style="display:none;">
+  <div class="dialog-content" style="
+      width: 95%;
+      max-width: 1400px;
+      max-height: 80vh;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+  ">
+    <div class="dialog-message"><strong>Records:</strong></div>
+    <div id="recordsTableContainer" class="history-table" style="
+        overflow-x: auto;
+        overflow-y: auto;
+        flex: 1;
+    ">
+      <table style="border-collapse: collapse; width: max-content;">
+        <thead id="recordsTableHead" style="position: sticky; top: 0; background: #f0f0f0;"></thead>
+        <tbody id="recordsTableBody"></tbody>
+      </table>
+    </div>
+    <div class="dialog-pagination" style="margin-top:10px; text-align:right;">
+      <button id="prevPageBtn">Previous</button>
+      <span id="pageInfo"></span>
+      <button id="nextPageBtn">Next</button>
+    </div>
+    <div class="dialog-buttons" style="margin-top:10px; text-align:center;">
+      <button onclick="closeRecordsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+ <!-- Sidebar Options -->
+  <div class="options-sidebar">
+    <div class="sidebar-header">
+      <h2>SCS Dashboard</h2>
+    </div>
+
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name" id="loggedInName">Loading...</div>
+        <div class="user-position" id="loggedInPosition">Loading...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <ul class="options-list">
+        <li class="option-item">
+          <a href="#" class="option-btn" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i>
+            <span>Refresh Data</span>
+          </a>
+        </li>
+        <li class="option-item">
+          <a href="0-login.html" class="option-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Information Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-info-circle"></i>
+        <h3>Information</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item"><a href="1-overview.html" class="option-btn"><i class="fas fa-home"></i><span>Overview</span></a></li>
+        <li class="option-item"><a href="2-completion.html" class="option-btn"><i class="fas fa-check-circle"></i><span>Completion</span></a></li>
+        <li class="option-item"><a href="3-mileage.html" class="option-btn"><i class="fas fa-road"></i><span>Train Mileage</span></a></li>
+        <li class="option-item"><a href="4-failure.html" class="option-btn"><i class="fas fa-exclamation-triangle"></i><span>Mainline Failure</span></a></li>
+        <li class="option-item"><a href="5-unscheduled.html" class="option-btn active"><i class="fas fa-calendar-times"></i><span>Unscheduled</span></a></li>
+      </ul>
+    </div>
+
+    <!-- Maintenance Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-tools"></i>
+        <h3>Maintenance</h3>
+      </div>
+      <ul class="options-list">
+        <!-- Plan -->
+        <li class="option-item"><a href="plan.html" class="option-btn"><i class="fas fa-calendar-check"></i><span>Plan</span></a></li>
+
+        <!-- Preventive collapsible -->
+<li class="option-item collapsible">
+  <a href="#" class="option-btn collapse-btn">
+    <i class="fas fa-shield-alt"></i>
+    <span>Preventive</span>
+    <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto;"></i>
+  </a>
+  <ul class="submenu">
+    <li class="option-item">
+      <a href="7-maintenance.html" class="option-btn" id="dashboardBtn">
+        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="#" class="option-btn disabled" id="handOverBtn">
+        <i class="fas fa-sign-in-alt"></i><span>Hand-Over</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="#" class="option-btn disabled" id="handBackBtn">
+        <i class="fas fa-sign-out-alt"></i><span>Hand-Back</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="#" class="option-btn disabled" id="historyBtn">
+        <i class="fas fa-history"></i><span>History</span>
+      </a>
+    </li>
+  </ul>
+</li>
+
+        <!-- Corrective collapsible -->
+        <li class="option-item collapsible">
+          <a href="#" class="option-btn collapse-btn">
+            <i class="fas fa-wrench"></i>
+            <span>Corrective</span>
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto;"></i>
+          </a>
+          <ul class="submenu">
+            <li class="option-item"><a href="corrective_open.html" class="option-btn"><i class="fas fa-folder-open"></i><span>Open Item</span></a></li>
+            <li class="option-item"><a href="corrective_history.html" class="option-btn"><i class="fas fa-history"></i><span>History</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Status Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-clipboard-list"></i>
+        <h3>Status</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item"><a href="window.html" class="option-btn"><i class="fas fa-window-maximize"></i><span>Window Glass</span></a></li>
+        <li class="option-item"><a href="hvac.html" class="option-btn"><i class="fas fa-fan"></i><span>HVAC</span></a></li>
+        <li class="option-item"><a href="aps.html" class="option-btn"><i class="fas fa-door-open"></i><span>APS</span></a></li>
+        <li class="option-item"><a href="traction.html" class="option-btn"><i class="fas fa-bolt"></i><span>Traction</span></a></li>
+        <li class="option-item"><a href="bogie.html" class="option-btn"><i class="fas fa-cogs"></i><span>Bogie</span></a></li>
+        <li class="option-item"><a href="lighting.html" class="option-btn"><i class="fas fa-lightbulb"></i><span>Lighting</span></a></li>
+        <li class="option-item"><a href="pis.html" class="option-btn"><i class="fas fa-bullhorn"></i><span>PIS</span></a></li>
+        <li class="option-item"><a href="brake.html" class="option-btn"><i class="fas fa-stop-circle"></i><span>Brake</span></a></li>
+      </ul>
+    </div>
+  </div>
+
+    <!-- Main Content -->
+  <div class="main-content">
+    <div class="operation-header">
+      <h1><i class="fas fa-calendar-times"></i> Unscheduled Works</h1>
+    </div>
+    <p class="welcome-text">Overview of unscheduled works. Today: <span id="todayDate"></span></p>
+
+    <!-- Summary Cards -->
+   <div class="dashboard-stats">
+  <div class="action-card" id="cardTotal"><div class="stat-label">Total Unscheduled</div><div class="stat-value" id="TotalUnscheduled">0</div></div>
+  <div class="action-card" id="cardNew"><div class="stat-label">New Items</div><div class="stat-value" id="NewCount">0</div></div>
+  <div class="action-card" id="cardRepaired"><div class="stat-label">Repaired Items</div><div class="stat-value" id="RepairedCount">0</div></div>
+  <div class="action-card" id="cardAmount"><div class="stat-label">Total Amount</div><div class="stat-value" id="TotalAmount">RM0</div></div>
+</div>
+
+    <!-- Chart: Unscheduled by Train -->
+   <div class="card">
+  <div class="card-header"><h2><i class="fas fa-chart-bar"></i> Price by Period</h2></div>
+  <div class="card-body"><canvas id="priceByPeriod" height="300"></canvas></div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header"><h2><i class="fas fa-chart-bar"></i> Works by Period</h2></div>
+  <div class="card-body"><canvas id="countByPeriod" height="300"></canvas></div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header"><h2><i class="fas fa-chart-bar"></i> Works by Train</h2></div>
+  <div class="card-body"><canvas id="unscheduledByTrain" height="300"></canvas></div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">
+    <h2><i class="fas fa-chart-bar"></i> Works by Item</h2>
+    <div class="chart-filters">
+      <label for="periodFilterItem">Period:</label>
+      <select id="periodFilterItem">
+        <option value="all">All</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-body"><canvas id="unscheduledByItem" height="300"></canvas></div>
+</div>
+
+  <!-- External JS -->
+  <script src="5-unscheduled.js"></script>
+</body>
+</html>
