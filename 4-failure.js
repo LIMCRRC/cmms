@@ -264,7 +264,6 @@ function updateCharts(data, selectedPeriod) {
 }
 
 // Enhanced form validation
-// Enhanced form validation
 function validateForm(formData) {
   const errors = [];
   
@@ -281,15 +280,9 @@ function validateForm(formData) {
     errors.push('Year must be a 4-digit number');
   }
   
-  // Period validation - more flexible
-  if (formData.Period) {
-    // Accept MMM-YY (Aug-24) or full dates that will be formatted by Apps Script
-    const periodRegex = /^[A-Za-z]{3}-\d{2}$/;
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    
-    if (!periodRegex.test(formData.Period) && !dateRegex.test(formData.Period)) {
-      errors.push('Period must be in MMM-YY format (e.g., Aug-24) or YYYY-MM-DD');
-    }
+  // Period validation (MMM-YY format)
+  if (formData.Period && !/^[A-Za-z]{3}-\d{2}$/.test(formData.Period)) {
+    errors.push('Period must be in MMM-YY format (e.g., Aug-24)');
   }
   
   // Date validation
@@ -545,41 +538,11 @@ document.getElementById("nextPageBtn").onclick = () => {
 };
 
 // ---------------------- Initialize Dashboard ----------------------
-// Test function to verify Apps Script connection
-async function testAppsScriptConnection() {
-  try {
-    console.log('Testing connection to:', SCRIPT_URL);
-    
-    const response = await fetch(SCRIPT_URL);
-    const result = await response.json();
-    
-    console.log('GET test result:', result);
-    
-    if (result.success) {
-      console.log('✅ Apps Script GET is working correctly');
-      return true;
-    } else {
-      console.error('❌ Apps Script GET failed:', result.error);
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ Connection test failed:', error);
-    return false;
-  }
-}
-
-// Call this during initialization
 async function initDashboard(){
-  setUserInfo();
+  setUserInfo(); // Set user info on page load
   
   const overlay = document.getElementById("loadingOverlay");
   overlay.style.display="flex";
-
-  // Test connection first
-  const connectionOk = await testAppsScriptConnection();
-  if (!connectionOk) {
-    showFormMessage('Warning: Cannot connect to server. Data submission may not work.', 'error');
-  }
 
   const data = await fetchFailureData();
   if(!data.length){ 
@@ -591,6 +554,7 @@ async function initDashboard(){
   populatePeriodFilter(data);
   updateCharts(data,"all");
   
+  // Add export button
   addExportButton();
 
   document.getElementById("periodFilter").addEventListener("change", e => {
@@ -632,15 +596,13 @@ document.getElementById('tabInput').addEventListener('click', function() {
   autoPopulateCurrentDate();
 });
 
-// Enhanced form submission with better debugging
+// Enhanced form submission
 document.getElementById('failureForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   
   const form = e.target;
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
-  
-  console.log('Form data to submit:', data); // Debug log
   
   // Validate form
   const errors = validateForm(data);
@@ -656,18 +618,15 @@ document.getElementById('failureForm').addEventListener('submit', async function
   submitBtn.disabled = true;
   
   try {
-    console.log('Sending request to:', SCRIPT_URL); // Debug log
-    
     const response = await fetch(SCRIPT_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(data)
-});
-    
-    console.log('Response status:', response.status); // Debug log
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
     
     const result = await response.json();
-    console.log('Response result:', result); // Debug log
     
     if (result.success) {
       showFormMessage('Record submitted successfully!', 'success');
@@ -678,10 +637,9 @@ document.getElementById('failureForm').addEventListener('submit', async function
         initDashboard();
       }, 1000);
     } else {
-      showFormMessage(`Error: ${result.error || 'Unknown error occurred'}`, 'error');
+      showFormMessage(`Error: ${result.error}`, 'error');
     }
   } catch (error) {
-    console.error('Submission error:', error); // Debug log
     showFormMessage(`Network error: ${error.message}`, 'error');
   } finally {
     // Restore button state
