@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCS Wheelsets Measurement Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles-wheel.css">
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading data...</div>
+  </div>
+  
+  <!-- Success Modal -->
+  <div id="successModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-success">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="modal-message" id="modalMessage">Data saved successfully!</div>
+      <button class="modal-close" onclick="closeSuccessModal()">OK</button>
+    </div>
+  </div>
+
+    <!-- Sidebar Options -->
+  <div class="options-sidebar">
+    <div class="sidebar-header">
+      <h2>SCS Dashboard</h2>
+    </div>
+
+    <div class="user-info">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="user-details">
+        <div class="user-name" id="loggedInName">Loading...</div>
+        <div class="user-position" id="loggedInPosition">Loading...</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <ul class="options-list">
+        <li class="option-item">
+          <a href="#" class="option-btn" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i>
+            <span>Refresh Data</span>
+          </a>
+        </li>
+        <li class="option-item">
+          <a href="#" class="option-btn" id="logoutBtn">
+  <i class="fas fa-sign-out-alt"></i>
+  <span>Logout</span>
+</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Information Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-info-circle"></i>
+        <h3>Information</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item"><a href="1-overview.html" class="option-btn"><i class="fas fa-home"></i><span>Overview</span></a></li>
+        <li class="option-item"><a href="2-completion.html" class="option-btn"><i class="fas fa-check-circle"></i><span>Completion</span></a></li>
+        <li class="option-item"><a href="3-mileage.html" class="option-btn"><i class="fas fa-road"></i><span>Train Mileage</span></a></li>
+        <li class="option-item"><a href="4-failure.html" class="option-btn"><i class="fas fa-exclamation-triangle"></i><span>Mainline Failure</span></a></li>
+        <li class="option-item"><a href="5-unscheduled.html" class="option-btn"><i class="fas fa-calendar-times"></i><span>Unscheduled</span></a></li>
+      </ul>
+    </div>
+
+    <!-- Maintenance Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-tools"></i>
+        <h3>Maintenance</h3>
+      </div>
+      <ul class="options-list">
+        <!-- Plan -->
+        <li class="option-item"><a href="6-plan.html" class="option-btn"><i class="fas fa-calendar-check"></i><span>Plan</span></a></li>
+
+        <!-- Preventive collapsible -->
+<li class="option-item collapsible">
+  <a href="#" class="option-btn collapse-btn">
+    <i class="fas fa-shield-alt"></i>
+    <span>Preventive</span>
+    <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto;"></i>
+  </a>
+  <ul class="submenu">
+    <li class="option-item">
+      <a href="7-maintenance.html" class="option-btn" id="dashboardBtn">
+        <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="#" class="option-btn disabled" id="handOverBtn">
+        <i class="fas fa-sign-in-alt"></i><span>Hand-Over</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="#" class="option-btn disabled" id="handBackBtn">
+        <i class="fas fa-sign-out-alt"></i><span>Hand-Back</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="#" class="option-btn disabled" id="historyBtn">
+        <i class="fas fa-history"></i><span>History</span>
+      </a>
+    </li>
+  </ul>
+</li>
+        <!-- Corrective collapsible -->
+        <li class="option-item collapsible">
+          <a href="#" class="option-btn collapse-btn">
+            <i class="fas fa-wrench"></i>
+            <span>Corrective</span>
+            <i class="fas fa-chevron-down toggle-icon" style="margin-left: auto;"></i>
+          </a>
+          <ul class="submenu">
+            <li class="option-item"><a href="corrective_open.html" class="option-btn"><i class="fas fa-folder-open"></i><span>Open Item</span></a></li>
+            <li class="option-item"><a href="corrective_history.html" class="option-btn"><i class="fas fa-history"></i><span>History</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Status Section -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-clipboard-list"></i>
+        <h3>Status</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item"><a href="window.html" class="option-btn"><i class="fas fa-window-maximize"></i><span>Window Glass</span></a></li>
+        <li class="option-item"><a href="hvac.html" class="option-btn"><i class="fas fa-fan"></i><span>HVAC</span></a></li>
+        <li class="option-item"><a href="aps.html" class="option-btn"><i class="fas fa-door-open"></i><span>APS</span></a></li>
+        <li class="option-item"><a href="traction.html" class="option-btn"><i class="fas fa-bolt"></i><span>Traction</span></a></li>
+        <li class="option-item collapsible">
+  <a href="#" class="option-btn collapse-btn">
+    <i class="fas fa-cogs"></i>
+    <span>Bogie</span>
+    <i class="fas fa-chevron-down toggle-icon" style="margin-left:auto;"></i>
+  </a>
+  <ul class="submenu">
+    <li class="option-item">
+      <a href="bogie_wheelset.html" class="option-btn active">
+        <i class="fas fa-circle"></i><span>Wheelset</span>
+      </a>
+    </li>
+    <li class="option-item">
+      <a href="bogie_parts.html" class="option-btn">
+        <i class="fas fa-tools"></i><span>Parts</span>
+      </a>
+    </li>
+  </ul>
+</li>
+        <li class="option-item"><a href="lighting.html" class="option-btn"><i class="fas fa-lightbulb"></i><span>Lighting</span></a></li>
+        <li class="option-item"><a href="pis.html" class="option-btn"><i class="fas fa-bullhorn"></i><span>PIS</span></a></li>
+        <li class="option-item"><a href="brake.html" class="option-btn"><i class="fas fa-stop-circle"></i><span>Brake</span></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <h1>SCS Wheelsets Measurement Tracker</h1>
+    <p class="welcome-text">Monitor wheelsets diameters and flange condition.</p>
+
+    <!-- Messages -->
+    <div id="messageContainer"></div>
+
+    <!-- Tabs -->
+    <div class="content-tabs">
+      <button class="content-tab active" data-target="data-input-section"><i class="fas fa-edit"></i> Data Input</button>
+      <button class="content-tab" data-target="data-display-section"><i class="fas fa-table"></i> Data Display</button>
+    </div>
+
+    <!-- Data Input Section -->
+    <div id="data-input-section" class="content-section active">
+      <div class="controls">
+        <div class="controls-row">
+          <div class="form-group">
+            <label for="trainSelectInput"><strong>Select Train Set:</strong></label>
+            <select id="trainSelectInput" class="form-control">
+              <option value="">-- Select Train Set --</option>
+              <!-- Options will be populated by JavaScript -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dateInput"><strong>Measurement Date:</strong></label>
+            <input type="date" id="dateInput" class="form-control">
+          </div>
+          <div class="bulk-actions">
+            <button type="button" class="bulk-btn" onclick="fillAllDiameters()">
+              <i class="fas fa-fill"></i> Fill All
+            </button>
+            <button type="button" class="bulk-btn" onclick="clearInputData()">
+              <i class="fas fa-broom"></i> Clear All
+            </button>
+          </div>
+        </div>
+      </div>
+
+<!-- Technical Specifications - Diameter -->
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-ruler"></i> Diameter Specifications</h2>
+  </div>
+  <div class="specs-grid">
+    <div class="spec-item"><span class="spec-label">Wheel Diameter (New):</span><span class="spec-value">850 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Wheel Diameter (Min):</span><span class="spec-value">770 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Diameter Diff (Same Axle):</span><span class="spec-value">&lt; 2 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Diameter Diff (Same Bogie):</span><span class="spec-value">&lt; 4 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Diameter Diff (Same Car):</span><span class="spec-value">&lt; 7 mm</span></div>
+  </div>
+</div>
+
+<!-- Technical Specifications - Flange -->
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-circle-notch"></i> Flange Specifications</h2>
+  </div>
+  <div class="specs-grid">
+    <div class="spec-item"><span class="spec-label">Flange Height (Min):</span><span class="spec-value">30 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Flange Height (Max):</span><span class="spec-value">36 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Flange Thickness (Min):</span><span class="spec-value">24 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Flange Thickness (Max):</span><span class="spec-value">28.5 mm</span></div>
+  </div>
+</div>
+
+      <div class="table-container">
+        <table id="inputTable" class="data-table">
+          <thead>
+  <tr>
+    <th>Trainset</th>
+    <th>Date</th>
+    <th>Car</th>
+    <th>Bogie</th>
+    <th>Axle</th>
+    <th>Dia L<br>(mm)</th>
+    <th>Dia R<br>(mm)</th>
+    <th>Flange Ht L<br>(mm)</th>
+    <th>Flange Ht R<br>(mm)</th>
+    <th>Flange Thk L<br>(mm)</th>
+    <th>Flange Thk R<br>(mm)</th>
+    <th>Axle Diff<br>(mm)</th>
+    <th>Bogie Diff<br>(mm)</th>
+    <th>Car Diff<br>(mm)</th>
+  </tr>
+</thead>
+          <tbody id="inputTableBody">
+            <!-- Table will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <button onclick="saveAllMeasurements()" class="submit-btn">
+        <i class="fas fa-save"></i> Save All Measurements
+      </button>
+    </div>
+
+   <!-- Data Display Section -->
+    <div id="data-display-section" class="content-section">
+      <div class="controls">
+        <div class="controls-row">
+          <div class="form-group">
+            <label for="trainSelectDisplay"><strong>Select Train Set:</strong></label>
+            <select id="trainSelectDisplay" class="form-control">
+              <option value="">-- Select Train Set --</option>
+              <!-- Options will be populated by JavaScript -->
+            </select>
+          </div>
+          <button onclick="refreshDisplayData()" class="btn btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+      </div>
+
+<!-- Technical Specifications - Diameter -->
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-ruler"></i> Diameter Specifications</h2>
+  </div>
+  <div class="specs-grid">
+    <div class="spec-item"><span class="spec-label">Wheel Diameter (New):</span><span class="spec-value">850 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Wheel Diameter (Min):</span><span class="spec-value">770 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Diameter Diff (Same Axle):</span><span class="spec-value">&lt; 2 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Diameter Diff (Same Bogie):</span><span class="spec-value">&lt; 4 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Diameter Diff (Same Car):</span><span class="spec-value">&lt; 7 mm</span></div>
+  </div>
+</div>
+
+<!-- Technical Specifications - Flange -->
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-circle-notch"></i> Flange Specifications</h2>
+  </div>
+  <div class="specs-grid">
+    <div class="spec-item"><span class="spec-label">Flange Height (Min):</span><span class="spec-value">30 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Flange Height (Max):</span><span class="spec-value">36 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Flange Thickness (Min):</span><span class="spec-value">24 mm</span></div>
+    <div class="spec-item"><span class="spec-label">Flange Thickness (Max):</span><span class="spec-value">28.5 mm</span></div>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div id="summaryCards" class="quick-actions">
+  <div class="action-card card-critical">
+    <i class="fas fa-circle"></i>
+    <h3>Diameter Out of Range</h3>
+    <p id="diameterOutCount">0</p>
+  </div>
+  <div class="action-card card-warning">
+    <i class="fas fa-ruler-combined"></i>
+    <h3>Diameter Diff Violation</h3>
+    <p id="diameterDiffCount">0</p>
+  </div>
+  <div class="action-card card-normal">
+    <i class="fas fa-circle-notch"></i>
+    <h3>Flange Out of Range</h3>
+    <p id="flangeOutCount">0</p>
+  </div>
+</div>
+
+      <div class="table-container">
+        <table id="displayTable" class="data-table">
+          <thead>
+  <tr>
+    <th>Trainset</th>
+    <th>Date</th>
+    <th>Car</th>
+    <th>Bogie</th>
+    <th>Axle</th>
+    <th>Dia L<br>(mm)</th>
+    <th>Dia R<br>(mm)</th>
+    <th>Flange Ht L<br>(mm)</th>
+    <th>Flange Ht R<br>(mm)</th>
+    <th>Flange Thk L<br>(mm)</th>
+    <th>Flange Thk R<br>(mm)</th>
+    <th>Axle Diff<br>(mm)</th>
+    <th>Bogie Diff<br>(mm)</th>
+    <th>Car Diff<br>(mm)</th>
+    <th>Status</th>
+  </tr>
+</thead>
+          <tbody id="displayTableBody">
+            <tr><td colspan="15" style="text-align:center;">Select a train set to display data</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Violation Alerts -->
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-exclamation-triangle"></i> Tolerance Violations</h2>
+        </div>
+        <div id="violationAlerts" class="violations-container">
+          <div class="no-violations">No violations detected</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Configuration
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4oNxBGizMvGargob7MsVzH92EnQV-ZyBpX661KT6GWENHK0OUsEj0tKgQCW6mU8ll/exec';
+const trains = Array.from({length: 38}, (_, i) => 'T' + String(i+1).padStart(2, '0'));
+const MIN_DIAMETER = 770;
+const MAX_DIAMETER = 850;
+const MAX_AXLE_DIFF = 2;
+const MAX_BOGIE_DIFF = 4;
+const MAX_CAR_DIFF = 7;
+const MIN_FLANGE_HEIGHT = 30;
+const MAX_FLANGE_HEIGHT = 36;
+const DESIGN_FLANGE_HEIGHT = 30;
+const MIN_FLANGE_THICKNESS = 24;
+const MAX_FLANGE_THICKNESS = 28.5;
+const DESIGN_FLANGE_THICKNESS = 28.5;
+
+// Add this utility function at the top of your script
+function formatDateForDisplay(dateString) {
+  if (!dateString) return '';
+  
+  try {
+    // Handle various date formats
+    if (dateString instanceof Date) {
+      return dateString.toISOString().split('T')[0];
+    }
+    
+    if (typeof dateString === 'string') {
+      // Extract yyyy-mm-dd from ISO string like "2025-08-31T16:00:00.000Z"
+      if (dateString.includes('T')) {
+        return dateString.split('T')[0];
+      }
+      // If it's already in yyyy-mm-dd format, return as is
+      if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return dateString;
+      }
+      // Try to parse other formats
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+    }
+    
+    return dateString;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+}
+
+// Define the correct car sequence
+const CAR_SEQUENCE = ['MC1', 'T1', 'M1', 'M2', 'T2', 'MC2'];
+
+// DOM Elements
+const trainSelectInput = document.getElementById('trainSelectInput');
+const trainSelectDisplay = document.getElementById('trainSelectDisplay');
+const dateInput = document.getElementById('dateInput');
+const messageContainer = document.getElementById('messageContainer');
+const successModal = document.getElementById('successModal');
+const modalMessage = document.getElementById('modalMessage');
+
+let currentData = [];
+let currentTrain = '';
+
+// Initialize application
+document.addEventListener('DOMContentLoaded', function() {
+  initializeApp();
+});
+
+function initializeApp() {
+  populateTrainDropdowns();
+  setupEventListeners();
+  updateDateTime();
+  
+  // Set default date to today
+  dateInput.valueAsDate = new Date();
+  
+  // Create blank input table without selecting any train
+  createBlankInputTable();
+}
+
+function populateTrainDropdowns() {
+  // Clear existing options first
+  trainSelectInput.innerHTML = '<option value="">-- Select Train Set --</option>';
+  trainSelectDisplay.innerHTML = '<option value="">-- Select Train Set --</option>';
+  
+  trains.forEach(train => {
+    // Input dropdown
+    let option1 = document.createElement('option');
+    option1.value = train;
+    option1.textContent = train;
+    trainSelectInput.appendChild(option1);
+    
+    // Display dropdown
+    let option2 = document.createElement('option');
+    option2.value = train;
+    option2.textContent = train;
+    trainSelectDisplay.appendChild(option2);
+  });
+}
+
+function setupEventListeners() {
+  // Train selection changes
+  trainSelectInput.addEventListener('change', function() {
+    currentTrain = this.value;
+    if (currentTrain) {
+      createBlankInputTable();
+    } else {
+      // Clear the table if no train is selected
+      document.getElementById('inputTableBody').innerHTML = '';
+    }
+  });
+  
+   trainSelectDisplay.addEventListener('change', function() {
+    currentTrain = this.value;
+    if (currentTrain) {
+      loadTrainData(currentTrain, 'display');
+    } else {
+      // Clear the display table if no train is selected
+      document.getElementById('displayTableBody').innerHTML = '<tr><td colspan="15" style="text-align:center;">Select a train set to display data</td></tr>';
+      document.getElementById('violationAlerts').innerHTML = '<div class="no-violations">No violations detected</div>';
+    }
+  });
+  
+  // Refresh button
+  document.getElementById('refreshBtn').addEventListener('click', function() {
+    if (currentTrain) {
+      const activeSection = document.querySelector('.content-section.active').id;
+      if (activeSection === 'data-input-section') {
+        createBlankInputTable();
+      } else {
+        loadTrainData(currentTrain, 'display');
+      }
+    }
+  });
+  
+  // Tab switching
+  document.querySelectorAll('.content-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(this.dataset.target).classList.add('active');
+    });
+  });
+}
+
+// Create blank input table
+function createBlankInputTable() {
+  const tbody = document.getElementById('inputTableBody');
+  const train = trainSelectInput.value;
+  const date = dateInput.value;
+  
+  if (!train) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;">Please select a train set</td></tr>';
+    return;
+  }
+  
+ let rows = [];
+  
+  CAR_SEQUENCE.forEach(car => {
+    for (let bogieNum = 1; bogieNum <= 2; bogieNum++) {
+      const bogie = `B${bogieNum}`;
+      const bogieRows = [];
+      
+      for (let axleNum = 1; axleNum <= 2; axleNum++) {
+        const axle = `A${axleNum}`;
+        
+        const rowHTML = `
+          <tr>
+            <td>${train}</td>
+            <td>${date}</td>
+            ${axleNum === 1 && bogieNum === 1 ? `<td class="car-merged merged-cell" rowspan="4">${car}</td>` : ''}
+            ${axleNum === 1 ? `<td class="bogie-merged merged-cell" rowspan="2">${bogie}</td>` : ''}
+            <td>${axle}</td>
+            <td><input type="number" step="0.01" class="compact-input" placeholder="L" 
+                   onchange="updateWheelMeasurement('${car}', '${bogie}', '${axle}', 'L', 'diameter', this.value)"></td>
+            <td><input type="number" step="0.01" class="compact-input" placeholder="R" 
+                   onchange="updateWheelMeasurement('${car}', '${bogie}', '${axle}', 'R', 'diameter', this.value)"></td>
+            <td><input type="number" step="0.01" class="compact-input" placeholder="L" 
+                   onchange="updateWheelMeasurement('${car}', '${bogie}', '${axle}', 'L', 'flangeHeight', this.value)"></td>
+            <td><input type="number" step="0.01" class="compact-input" placeholder="R" 
+                   onchange="updateWheelMeasurement('${car}', '${bogie}', '${axle}', 'R', 'flangeHeight', this.value)"></td>
+            <td><input type="number" step="0.01" class="compact-input" placeholder="L" 
+                   onchange="updateWheelMeasurement('${car}', '${bogie}', '${axle}', 'L', 'flangeThickness', this.value)"></td>
+            <td><input type="number" step="0.01" class="compact-input" placeholder="R" 
+                   onchange="updateWheelMeasurement('${car}', '${bogie}', '${axle}', 'R', 'flangeThickness', this.value)"></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+        `;
+        bogieRows.push(rowHTML);
+      }
+      rows = rows.concat(bogieRows);
+    }
+  });
+  
+  tbody.innerHTML = rows.join('');
+  
+  // Reset current data for the new train
+  currentData = createEmptyDataStructure(train);
+}
+
+// Create empty data structure
+function createEmptyDataStructure(train) {
+  const data = [];
+  const date = dateInput.value;
+  
+  CAR_SEQUENCE.forEach(car => {
+    for (let bogieNum = 1; bogieNum <= 2; bogieNum++) {
+      for (let axleNum = 1; axleNum <= 2; axleNum++) {
+        ['L', 'R'].forEach(wheel => {
+          data.push({
+            train: train,
+            car: car,
+            bogie: `B${bogieNum}`,
+            axle: `A${axleNum}`,
+            wheel: wheel,
+            diameter: '',
+            flangeHeight: '',
+            flangeThickness: '',
+            status: '',
+            date: date
+          });
+        });
+      }
+    }
+  });
+  
+  return data;
+}
+
+// Update wheel measurement in current data
+function updateWheelMeasurement(car, bogie, axle, wheel, measurementType, value) {
+  const index = currentData.findIndex(row => 
+    row.car === car && row.bogie === bogie && row.axle === axle && row.wheel === wheel
+  );
+  
+  if (index !== -1) {
+    currentData[index][measurementType] = value;
+    
+    // Update status based on all measurements
+    updateWheelStatus(car, bogie, axle, wheel);
+    currentData[index].date = document.getElementById('dateInput').value;
+    
+    // Update the difference calculations in the input table
+    updateInputTableDifferences();
+  }
+}
+
+// Update wheel status based on all measurements
+function updateWheelStatus(car, bogie, axle, wheel) {
+  const index = currentData.findIndex(row => 
+    row.car === car && row.bogie === bogie && row.axle === axle && row.wheel === wheel
+  );
+  
+  if (index !== -1) {
+    const row = currentData[index];
+    let status = 'OK';
+    
+    // Check diameter
+    if (row.diameter && !isNaN(parseFloat(row.diameter))) {
+      const dia = parseFloat(row.diameter);
+      if (dia < MIN_DIAMETER || dia > MAX_DIAMETER) {
+        status = 'NG';
+      }
+    }
+    
+    // Check flange height
+    if (row.flangeHeight && !isNaN(parseFloat(row.flangeHeight))) {
+      const fh = parseFloat(row.flangeHeight);
+      if (fh < MIN_FLANGE_HEIGHT || fh > MAX_FLANGE_HEIGHT) {
+        status = 'NG';
+      }
+    }
+    
+    // Check flange thickness
+    if (row.flangeThickness && !isNaN(parseFloat(row.flangeThickness))) {
+      const ft = parseFloat(row.flangeThickness);
+      if (ft < MIN_FLANGE_THICKNESS || ft > MAX_FLANGE_THICKNESS) {
+        status = 'NG';
+      }
+    }
+    
+    // If no measurements, clear status
+    if (!row.diameter && !row.flangeHeight && !row.flangeThickness) {
+      status = '';
+    }
+    
+    currentData[index].status = status;
+  }
+}
+
+// Save All Measurements function
+function saveAllMeasurements() {
+  const train = trainSelectInput.value;
+  const date = dateInput.value;
+  
+  if (!train) {
+    showMessage('Please select a train set', 'error');
+    return;
+  }
+  
+  if (!date) {
+    showMessage('Please select a measurement date', 'error');
+    return;
+  }
+  
+  const wheelData = [];
+  
+  // Collect all wheel measurement data from currentData
+  currentData.forEach(row => {
+    if ((row.diameter && row.diameter.trim()) || (row.flangeHeight && row.flangeHeight.trim()) || (row.flangeThickness && row.flangeThickness.trim())) {
+      wheelData.push({
+        train: train,
+        car: row.car,
+        bogie: row.bogie,
+        axle: row.axle,
+        wheel: row.wheel,
+        diameter: row.diameter ? parseFloat(row.diameter) : '',
+        flangeHeight: row.flangeHeight ? parseFloat(row.flangeHeight) : '',
+        flangeThickness: row.flangeThickness ? parseFloat(row.flangeThickness) : '',
+        status: row.status,
+        date: date
+      });
+    }
+  });
+  
+  if (wheelData.length === 0) {
+    showMessage('Please enter at least one measurement', 'error');
+    return;
+  }
+  
+  showMessage('Saving data...', 'success');
+  
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ 
+      action: 'save', 
+      data: wheelData 
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      showSuccessModal(`Successfully saved ${wheelData.length} wheel measurements`);
+      // Clear the input table after successful save
+      createBlankInputTable();
+    } else {
+      showMessage('Error saving data: ' + result.error, 'error');
+    }
+  })
+  .catch(error => {
+    showMessage('Error: ' + error.message, 'error');
+  });
+}
+
+// Show success modal
+function showSuccessModal(message) {
+  modalMessage.textContent = message;
+  successModal.style.display = 'flex';
+}
+
+// Close success modal
+function closeSuccessModal() {
+  successModal.style.display = 'none';
+}
+
+// Load train data from server for display
+function loadTrainData(train, mode) {
+  if (mode === 'display') {
+    document.getElementById('displayTableBody').innerHTML = '<tr><td colspan="15" style="text-align:center;">Loading latest data...</td></tr>';
+    
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'load', train: train })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        showMessage('Error loading data: ' + data.error, 'error');
+        return;
+      }
+      
+      currentData = data.map(row => ({
+        train: row[0],
+        car: row[1],
+        bogie: row[2],
+        axle: row[3],
+        wheel: row[4],
+        diameter: row[5] || '',
+        flangeHeight: row[6] || '',
+        flangeThickness: row[7] || '',
+        status: row[8] || '',
+        date: row[9] || ''
+      }));
+      
+      if (currentData.length === 0) {
+        document.getElementById('displayTableBody').innerHTML = '<tr><td colspan="15" style="text-align:center;">No data available for this train set</td></tr>';
+        document.getElementById('violationAlerts').innerHTML = '<div class="no-violations">No data available</div>';
+        return;
+      }
+      
+      // Show the measurement date in the welcome text
+      const latestDate = getLatestMeasurementDate();
+      if (latestDate) {
+        document.querySelector('.welcome-text').innerHTML = `Monitor wheel diameters. Showing latest data from: <strong>${latestDate}</strong>. Page updated: <span id="currentDateTime"></span>`;
+        updateDateTime(); // Refresh the timestamp
+      }
+      
+      renderDisplayTable();
+    })
+    .catch(error => {
+      showMessage('Error: ' + error.message, 'error');
+      document.getElementById('displayTableBody').innerHTML = '<tr><td colspan="15" style="text-align:center;">Error loading data</td></tr>';
+    });
+  }
+}
+
+// Get the latest measurement date from current data
+function getLatestMeasurementDate() {
+  if (currentData.length === 0) return null;
+  
+  const dates = [...new Set(currentData.map(row => row.date))].filter(Boolean);
+  if (dates.length === 0) return null;
+  
+  // Return the most recent date (already formatted as yyyy-mm-dd)
+  return dates.sort().reverse()[0];
+}
+
+function updateSummaryCards(groupedData) {
+  let diameterOut = 0;
+  let diameterDiffOut = 0;
+  let flangeOut = 0;
+
+  const groups = Object.values(groupedData);
+
+  groups.forEach(g => {
+    // Diameter out of range
+    ['left', 'right'].forEach(side => {
+      const d = parseFloat(g[side].diameter);
+      if (d && (d < MIN_DIAMETER || d > MAX_DIAMETER)) diameterOut++;
+
+      const fh = parseFloat(g[side].flangeHeight);
+      if (fh && (fh < MIN_FLANGE_HEIGHT || fh > MAX_FLANGE_HEIGHT)) flangeOut++;
+
+      const ft = parseFloat(g[side].flangeThickness);
+      if (ft && (ft < MIN_FLANGE_THICKNESS || ft > MAX_FLANGE_THICKNESS)) flangeOut++;
+    });
+
+    // Diameter differences
+    const axle = parseFloat(g.axleDiff);
+    const bogie = parseFloat(g.bogieDiff);
+    const car = parseFloat(g.carDiff);
+    if ((axle && axle > MAX_AXLE_DIFF) || (bogie && bogie > MAX_BOGIE_DIFF) || (car && car > MAX_CAR_DIFF)) {
+      diameterDiffOut++;
+    }
+  });
+
+  document.getElementById('diameterOutCount').textContent = diameterOut;
+  document.getElementById('diameterDiffCount').textContent = diameterDiffOut;
+  document.getElementById('flangeOutCount').textContent = flangeOut;
+}
+
+// Render display table with merged cells
+function renderDisplayTable() {
+  const tbody = document.getElementById('displayTableBody');
+  
+  if (currentData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;">No data available for this train set</td></tr>';
+    document.getElementById('violationAlerts').innerHTML = '<div class="no-violations">No data available</div>';
+    return;
+  }
+  
+  // Group data by car, bogie, axle
+  const groupedData = {};
+  const violations = [];
+  
+  currentData.forEach(row => {
+    const key = `${row.car}-${row.bogie}-${row.axle}`;
+    if (!groupedData[key]) {
+      groupedData[key] = {
+        train: row.train,
+        date: row.date,
+        car: row.car,
+        bogie: row.bogie,
+        axle: row.axle,
+        left: { diameter: '', flangeHeight: '', flangeThickness: '', status: '' },
+        right: { diameter: '', flangeHeight: '', flangeThickness: '', status: '' },
+        axleDiff: '',
+        bogieDiff: '',
+        carDiff: '',
+        status: 'empty'
+      };
+    }
+    
+    if (row.wheel.toLowerCase() === 'l') {
+      groupedData[key].left = { 
+        diameter: row.diameter, 
+        flangeHeight: row.flangeHeight,
+        flangeThickness: row.flangeThickness,
+        status: row.status 
+      };
+    } else if (row.wheel.toLowerCase() === 'r') {
+      groupedData[key].right = { 
+        diameter: row.diameter, 
+        flangeHeight: row.flangeHeight,
+        flangeThickness: row.flangeThickness,
+        status: row.status 
+      };
+    }
+  });
+  
+  // Calculate differences and violations
+  calculateDifferences(groupedData);
+  checkViolations(groupedData, violations);
+  
+  // Create table rows with merged cells
+  const rows = generateTableRows(groupedData, 'display');
+  tbody.innerHTML = rows.join('');
+  
+  // Update violation alerts
+  updateViolationAlerts(violations);
+  updateSummaryCards(groupedData);
+  
+  // Show data summary
+  const totalWheels = currentData.length;
+  const measuredWheels = currentData.filter(row => 
+    row.diameter || row.flangeHeight || row.flangeThickness
+  ).length;
+  const latestDate = getLatestMeasurementDate();
+  
+  if (latestDate) {
+    showMessage(`Displaying ${measuredWheels} measured wheels from ${latestDate}`, 'success');
+  }
+}
+
+// Calculate differences for grouped data
+function calculateDifferences(groupedData) {
+  // Sort grouped data before calculations to ensure consistent ordering
+  const sortedGroups = Object.values(groupedData).sort((a, b) => {
+    const carOrderA = CAR_SEQUENCE.indexOf(a.car);
+    const carOrderB = CAR_SEQUENCE.indexOf(b.car);
+    
+    if (carOrderA !== carOrderB) return carOrderA - carOrderB;
+    if (a.bogie !== b.bogie) return a.bogie.localeCompare(b.bogie);
+    return a.axle.localeCompare(b.axle);
+  });
+
+  // Calculate axle differences (diameter only for now)
+  sortedGroups.forEach(group => {
+    if (group.left.diameter && group.right.diameter) {
+      const leftDia = parseFloat(group.left.diameter);
+      const rightDia = parseFloat(group.right.diameter);
+      group.axleDiff = Math.abs(leftDia - rightDia).toFixed(2);
+      
+      // Update status based on diameter values
+      const leftOK = leftDia >= MIN_DIAMETER && leftDia <= MAX_DIAMETER;
+      const rightOK = rightDia >= MIN_DIAMETER && rightDia <= MAX_DIAMETER;
+      group.status = (leftOK && rightOK) ? 'ok' : 'ng';
+    } else {
+      group.status = 'empty';
+    }
+  });
+  
+  // Calculate bogie differences (diameter only)
+  const bogieGroups = {};
+  sortedGroups.forEach(group => {
+    const bogieKey = `${group.car}-${group.bogie}`;
+    if (!bogieGroups[bogieKey]) {
+      bogieGroups[bogieKey] = [];
+    }
+    
+    if (group.left.diameter) bogieGroups[bogieKey].push(parseFloat(group.left.diameter));
+    if (group.right.diameter) bogieGroups[bogieKey].push(parseFloat(group.right.diameter));
+  });
+  
+  Object.entries(bogieGroups).forEach(([bogieKey, diameters]) => {
+    if (diameters.length > 1) {
+      const minDia = Math.min(...diameters);
+      const maxDia = Math.max(...diameters);
+      const bogieDiff = (maxDia - minDia).toFixed(2);
+      
+      // Apply the same bogie diff value to all rows in this bogie
+      sortedGroups.forEach(group => {
+        if (`${group.car}-${group.bogie}` === bogieKey) {
+          group.bogieDiff = bogieDiff;
+        }
+      });
+    }
+  });
+  
+  // Calculate car differences (diameter only)
+  const carGroups = {};
+  sortedGroups.forEach(group => {
+    const carKey = group.car;
+    if (!carGroups[carKey]) {
+      carGroups[carKey] = [];
+    }
+    
+    if (group.left.diameter) carGroups[carKey].push(parseFloat(group.left.diameter));
+    if (group.right.diameter) carGroups[carKey].push(parseFloat(group.right.diameter));
+  });
+  
+  Object.entries(carGroups).forEach(([carKey, diameters]) => {
+    if (diameters.length > 1) {
+      const minDia = Math.min(...diameters);
+      const maxDia = Math.max(...diameters);
+      const carDiff = (maxDia - minDia).toFixed(2);
+      
+      // Apply the same car diff value to all rows in this car
+      sortedGroups.forEach(group => {
+        if (group.car === carKey) {
+          group.carDiff = carDiff;
+        }
+      });
+    }
+  });
+}
+
+// Check for specification violations
+function checkViolations(groupedData, violations) {
+  const sortedGroups = Object.values(groupedData).sort((a, b) => {
+    const carOrderA = CAR_SEQUENCE.indexOf(a.car);
+    const carOrderB = CAR_SEQUENCE.indexOf(b.car);
+    if (carOrderA !== carOrderB) return carOrderA - carOrderB;
+    if (a.bogie !== b.bogie) return a.bogie.localeCompare(b.bogie);
+    return a.axle.localeCompare(b.axle);
+  });
+
+  sortedGroups.forEach(group => {
+    // === DIAMETER VIOLATIONS ===
+    if (group.left.diameter && (group.left.diameter < MIN_DIAMETER || group.left.diameter > MAX_DIAMETER)) {
+      violations.push({
+        category: 'Diameter Violation',
+        type: 'Diameter',
+        location: `${group.car} ${group.bogie} ${group.axle} (Left)`,
+        value: group.left.diameter,
+        limit: `${MIN_DIAMETER}-${MAX_DIAMETER}`
+      });
+      group.status = 'violation';
+    }
+    if (group.right.diameter && (group.right.diameter < MIN_DIAMETER || group.right.diameter > MAX_DIAMETER)) {
+      violations.push({
+        category: 'Diameter Violation',
+        type: 'Diameter',
+        location: `${group.car} ${group.bogie} ${group.axle} (Right)`,
+        value: group.right.diameter,
+        limit: `${MIN_DIAMETER}-${MAX_DIAMETER}`
+      });
+      group.status = 'violation';
+    }
+
+    // === DIAMETER DIFFERENCE VIOLATIONS ===
+    if (group.axleDiff && parseFloat(group.axleDiff) > MAX_AXLE_DIFF) {
+      violations.push({
+        category: 'Diameter Violation',
+        type: 'Axle Difference',
+        location: `${group.car} ${group.bogie} ${group.axle}`,
+        value: group.axleDiff,
+        limit: MAX_AXLE_DIFF
+      });
+      group.status = 'violation';
+    }
+    if (group.bogieDiff && parseFloat(group.bogieDiff) > MAX_BOGIE_DIFF) {
+      violations.push({
+        category: 'Diameter Violation',
+        type: 'Bogie Difference',
+        location: `${group.car} ${group.bogie}`,
+        value: group.bogieDiff,
+        limit: MAX_BOGIE_DIFF
+      });
+      group.status = 'violation';
+    }
+    if (group.carDiff && parseFloat(group.carDiff) > MAX_CAR_DIFF) {
+      violations.push({
+        category: 'Diameter Violation',
+        type: 'Car Difference',
+        location: `${group.car}`,
+        value: group.carDiff,
+        limit: MAX_CAR_DIFF
+      });
+      group.status = 'violation';
+    }
+
+    // === FLANGE VIOLATIONS ===
+    ['left', 'right'].forEach(side => {
+      const fh = parseFloat(group[side].flangeHeight);
+      const ft = parseFloat(group[side].flangeThickness);
+
+      if (fh && (fh < MIN_FLANGE_HEIGHT || fh > MAX_FLANGE_HEIGHT)) {
+        violations.push({
+          category: 'Flange Violation',
+          type: 'Flange Height',
+          location: `${group.car} ${group.bogie} ${group.axle} (${side.toUpperCase()})`,
+          value: fh,
+          limit: `${MIN_FLANGE_HEIGHT}-${MAX_FLANGE_HEIGHT}`
+        });
+        group.status = 'violation';
+      }
+
+      if (ft && (ft < MIN_FLANGE_THICKNESS || ft > MAX_FLANGE_THICKNESS)) {
+        violations.push({
+          category: 'Flange Violation',
+          type: 'Flange Thickness',
+          location: `${group.car} ${group.bogie} ${group.axle} (${side.toUpperCase()})`,
+          value: ft,
+          limit: `${MIN_FLANGE_THICKNESS}-${MAX_FLANGE_THICKNESS}`
+        });
+        group.status = 'violation';
+      }
+    });
+  });
+}
+
+// Generate table rows with merged cells
+function generateTableRows(groupedData, mode) {
+  const rows = [];
+  const sortedGroups = Object.values(groupedData).sort((a, b) => {
+    const carOrderA = CAR_SEQUENCE.indexOf(a.car);
+    const carOrderB = CAR_SEQUENCE.indexOf(b.car);
+    if (carOrderA !== carOrderB) return carOrderA - carOrderB;
+    if (a.bogie !== b.bogie) return a.bogie.localeCompare(b.bogie);
+    return a.axle.localeCompare(b.axle);
+  });
+
+  sortedGroups.forEach(group => {
+    const leftDia = group.left.diameter ? parseFloat(group.left.diameter) : '';
+    const rightDia = group.right.diameter ? parseFloat(group.right.diameter) : '';
+    const leftFH = group.left.flangeHeight ? parseFloat(group.left.flangeHeight) : '';
+    const rightFH = group.right.flangeHeight ? parseFloat(group.right.flangeHeight) : '';
+    const leftFT = group.left.flangeThickness ? parseFloat(group.left.flangeThickness) : '';
+    const rightFT = group.right.flangeThickness ? parseFloat(group.right.flangeThickness) : '';
+
+    const axleDiff = group.axleDiff ? parseFloat(group.axleDiff) : '';
+    const bogieDiff = group.bogieDiff ? parseFloat(group.bogieDiff) : '';
+    const carDiff = group.carDiff ? parseFloat(group.carDiff) : '';
+
+    // Red highlight if out of tolerance
+    const leftDiaClass = (leftDia && (leftDia < MIN_DIAMETER || leftDia > MAX_DIAMETER)) ? 'out-of-range' : '';
+    const rightDiaClass = (rightDia && (rightDia < MIN_DIAMETER || rightDia > MAX_DIAMETER)) ? 'out-of-range' : '';
+    const leftFHClass = (leftFH && (leftFH < MIN_FLANGE_HEIGHT || leftFH > MAX_FLANGE_HEIGHT)) ? 'out-of-range' : '';
+    const rightFHClass = (rightFH && (rightFH < MIN_FLANGE_HEIGHT || rightFH > MAX_FLANGE_HEIGHT)) ? 'out-of-range' : '';
+    const leftFTClass = (leftFT && (leftFT < MIN_FLANGE_THICKNESS || leftFT > MAX_FLANGE_THICKNESS)) ? 'out-of-range' : '';
+    const rightFTClass = (rightFT && (rightFT < MIN_FLANGE_THICKNESS || rightFT > MAX_FLANGE_THICKNESS)) ? 'out-of-range' : '';
+
+    const axleDiffClass = (axleDiff && axleDiff > MAX_AXLE_DIFF) ? 'out-of-range' : '';
+    const bogieDiffClass = (bogieDiff && bogieDiff > MAX_BOGIE_DIFF) ? 'out-of-range' : '';
+    const carDiffClass = (carDiff && carDiff > MAX_CAR_DIFF) ? 'out-of-range' : '';
+
+    rows.push(`
+      <tr>
+        <td>${group.train}</td>
+        <td>${formatDateForDisplay(group.date)}</td>
+        <td>${group.car}</td>
+        <td>${group.bogie}</td>
+        <td>${group.axle}</td>
+        <td class="${leftDiaClass}">${leftDia || '-'}</td>
+        <td class="${rightDiaClass}">${rightDia || '-'}</td>
+        <td class="${leftFHClass}">${leftFH || '-'}</td>
+        <td class="${rightFHClass}">${rightFH || '-'}</td>
+        <td class="${leftFTClass}">${leftFT || '-'}</td>
+        <td class="${rightFTClass}">${rightFT || '-'}</td>
+        <td class="${axleDiffClass}">${axleDiff || '-'}</td>
+        <td class="${bogieDiffClass}">${bogieDiff || '-'}</td>
+        <td class="${carDiffClass}">${carDiff || '-'}</td>
+        <td class="${group.status || ''}">${group.status ? group.status.toUpperCase() : ''}</td>
+      </tr>
+    `);
+  });
+
+  return rows;
+}
+
+// Update difference calculations in input table
+function updateInputTableDifferences() {
+  // This would recalculate and update the difference columns in real-time
+  // For now, we'll just mark them as needing calculation
+  const diffCells = document.querySelectorAll('#inputTableBody td:nth-child(12), #inputTableBody td:nth-child(13), #inputTableBody td:nth-child(14)');
+  diffCells.forEach(cell => {
+    if (cell.textContent === '-') {
+      cell.textContent = 'Calc...';
+    }
+  });
+}
+
+function getDiffStatusClass(diff, maxDiff) {
+  if (!diff || diff === '') return '';
+  return parseFloat(diff) > maxDiff ? 'violation' : 'ok';
+}
+
+function updateViolationAlerts(violations) {
+  const container = document.getElementById('violationAlerts');
+  container.innerHTML = '';
+
+  if (!violations || violations.length === 0) {
+    container.innerHTML = '<div class="no-violations">No violations detected</div>';
+    return;
+  }
+
+  const diameterViolations = violations.filter(v => v.category === 'Diameter Violation');
+  const flangeViolations = violations.filter(v => v.category === 'Flange Violation');
+
+  if (diameterViolations.length > 0) {
+    const diameterSection = document.createElement('div');
+    diameterSection.innerHTML = '<h4 style="color:#c53030;">Diameter Violations</h4>';
+    diameterViolations.forEach(v => {
+      const item = document.createElement('div');
+      item.className = 'violation-item';
+      item.textContent = `${v.type} at ${v.location}: ${v.value} mm (Limit ${v.limit})`;
+      diameterSection.appendChild(item);
+    });
+    container.appendChild(diameterSection);
+  }
+
+  if (flangeViolations.length > 0) {
+    const flangeSection = document.createElement('div');
+    flangeSection.innerHTML = '<h4 style="color:#c53030; margin-top:8px;">Flange Violations</h4>';
+    flangeViolations.forEach(v => {
+      const item = document.createElement('div');
+      item.className = 'violation-item';
+      item.textContent = `${v.type} at ${v.location}: ${v.value} mm (Limit ${v.limit})`;
+      flangeSection.appendChild(item);
+    });
+    container.appendChild(flangeSection);
+  }
+}
+
+// Utility functions
+function fillAllDiameters() {
+  const value = prompt('Enter diameter value to fill all fields:', '850.00');
+  if (value && !isNaN(parseFloat(value))) {
+    // Update all diameter inputs in the table
+    document.querySelectorAll('#inputTable .compact-input').forEach((input, index) => {
+      // Only fill diameter inputs (columns 6-7, 8-9, 10-11 are flange measurements)
+      if (index % 6 < 2) { // First two inputs in each set of 6 are diameters
+        input.value = parseFloat(value).toFixed(2);
+        // Trigger change event to update currentData
+        const event = new Event('change');
+        input.dispatchEvent(event);
+      }
+    });
+  }
+}
+
+function clearInputData() {
+  if (confirm('Are you sure you want to clear all input fields?')) {
+    // Clear all inputs in the table
+    document.querySelectorAll('#inputTable .compact-input').forEach(input => {
+      input.value = '';
+      // Trigger change event to update currentData
+      const event = new Event('change');
+      input.dispatchEvent(event);
+    });
+  }
+}
+
+function refreshDisplayData() {
+  if (currentTrain) {
+    loadTrainData(currentTrain, 'display');
+  }
+}
+
+function showMessage(message, type) {
+  messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
+  messageContainer.style.display = 'block';
+  
+  setTimeout(() => {
+    messageContainer.style.display = 'none';
+  }, 5000);
+}
+
+function updateDateTime() {
+  const now = new Date();
+  document.getElementById('currentDateTime').textContent = formatDateForDisplay(now.toISOString());
+}
+
+// Auto-refresh date/time every minute
+setInterval(updateDateTime, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SCS Window Glass Status Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="styles-window.css">
+</head>
+<body>
+     <div class="options-sidebar">
+        <div class="sidebar-header">
+            <h2>SCS Dashboard</h2>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="user-details">
+                <div class="user-name" id="loggedInName">Loading...</div>
+                <div class="user-position" id="loggedInPosition">Loading...</div>
+            </div>
+        </div>
+        
+        <div class="sidebar-section">
+            <ul class="options-list">
+                <li class="option-item">
+                    <a href="#" class="option-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh Data</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="index.html" class="option-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-header">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Plan</h3>
+            </div>
+            <ul class="options-list">
+                <li class="option-item">
+                    <a href="plan.html" class="option-btn" id="planBtn">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Maintenance Plan</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="sidebar-section">
+            <div class="section-header">
+                <i class="fas fa-tachometer-alt"></i>
+                <h3>Mileage</h3>
+            </div>
+            <ul class="options-list">
+                <li class="option-item">
+                    <a href="mileage.html" class="option-btn" id="mileageBtn">
+                        <i class="fas fa-road"></i>
+                        <span>Train Mileage</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+   <div class="sidebar-section">
+      <div class="section-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Failure</h3>
+      </div>
+      <ul class="options-list">
+        <li class="option-item">
+          <a href="failure.html" class="option-btn">
+            <i class="fas fa-circle-xmark"></i>
+            <span>Mainline Failure</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+        <div class="sidebar-section">
+            <div class="section-header">
+                <i class="fas fa-tools"></i>
+                <h3>Maintenance</h3>
+            </div>
+            <ul class="options-list">
+                <li class="option-item">
+                    <a href="maintenance.html" class="option-btn" id="dashboardBtn">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="#" class="option-btn" id="handOverBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Hand-Over</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="#" class="option-btn" id="handBackBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Hand-Back</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="#" class="option-btn" id="historyBtn">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="section-header">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>Status</h3>
+            </div>
+            <ul class="options-list">
+                <li class="option-item">
+                    <a href="window.html" class="option-btn active" id="windowGlassBtn">
+                        <i class="fas fa-window-maximize"></i>
+                        <span>Window Glass</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="hvac.html" class="option-btn" id="hvacBtn">
+                        <i class="fas fa-fan"></i>
+                        <span>HVAC</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="aps.html" class="option-btn" id="apsBtn">
+                        <i class="fas fa-door-open"></i>
+                        <span>APS</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="traction.html" class="option-btn" id="tractionBtn">
+                        <i class="fas fa-bolt"></i>
+                        <span>Traction</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="bogie.html" class="option-btn" id="bogieBtn">
+                        <i class="fas fa-cogs"></i>
+                        <span>Bogie</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="lighting.html" class="option-btn" id="lightingBtn">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Lighting</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="pis.html" class="option-btn" id="pisBtn">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>PIS</span>
+                    </a>
+                </li>
+                <li class="option-item">
+                    <a href="brake.html" class="option-btn" id="brakeBtn">
+                        <i class="fas fa-stop-circle"></i>
+                        <span>Brake</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+  <div class="main-content">
+    <h1>Window Glass Status Management</h1>
+
+    <div class="summary-cards" id="summaryCards">
+      <!-- Will be populated by JavaScript -->
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Train Selection</h2></div>
+      <div class="form-group">
+        <label for="trainSelect">Select Train Set:</label>
+        <select id="trainSelect"></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Carriage Selection</h2></div>
+      <div class="carriage-tabs" id="carriageTabs"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Window Glass Status</h2></div>
+      <div class="glass-grid" id="glassGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Status Legend</h2></div>
+      <div class="status-legend">
+        <div class="status-badge normal"><i class="fas fa-square"></i> Normal</div>
+        <div class="status-badge damaged"><i class="fas fa-square"></i> Damaged</div>
+        <div class="status-badge repaired"><i class="fas fa-square"></i> Repaired</div>
+        <div class="status-badge water"><i class="fas fa-square"></i> Water Issue</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Notes</h2></div>
+      <div class="form-group">
+        <textarea id="trainNotes" rows="4" placeholder="Add any additional notes..."></textarea>
+      </div>
+      <div class="btn-group">
+        <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Save to Database</button>
+      </div>
+      <div id="statusMessage" class="status-message"></div>
+    </div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+    <div class="loading-spinner" role="status" aria-hidden="true"></div>
+    <div class="loading-text" id="loadingText">Processing...</div>
+  </div>
+
+  <script src="script-window.js"></script>
+</body>
+</html>
