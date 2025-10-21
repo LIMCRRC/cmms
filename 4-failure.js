@@ -1,6 +1,8 @@
-// failure.js - Updated with period formatting fix
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwM4Sy3aMuLWQRmXOs40Bdrc5SxTQePTvThHqs_LJ47yGC9LWo-8Snwaii9kro4Vx7u/exec";
+// failure.js - Complete revised version
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHdGZgbb-koV0qK7qF9MJmPTtxPxy4OB6Ep-u6XN_X0T-5VStlH0j5rDyF227ucdL5/exec";
 const date = new Date();
+Chart.register(ChartDataLabels);
+
 // Use local date for display
 document.getElementById("todayDate").textContent = 
   `${date.getDate().toString().padStart(2, '0')}-${date.toLocaleString('en-US', { month: 'short' })}-${date.getFullYear()}`;
@@ -111,63 +113,97 @@ function getSelectedFaults(chartId) {
 
 // Create stacked bar chart
 function createStackedChart(ctx, labels, datasets, chartId) {
-  // Calculate max value across all datasets
-  let maxValue = 0;
-  datasets.forEach(dataset => {
-    const datasetMax = Math.max(...dataset.data);
-    if (datasetMax > maxValue) maxValue = datasetMax;
-  });
-  
-  // Add padding (about 10% or at least 2 units)
-  const paddedMax = Math.max(Math.ceil(maxValue * 1.1), maxValue + 2);
-  
+  // Find the highest stacked total per label
+  const totals = labels.map((_, i) =>
+    datasets.reduce((sum, ds) => sum + (ds.data[i] || 0), 0)
+  );
+  const maxValue = Math.max(...totals);
+  const paddedMax = Math.ceil(maxValue * 1.2); // extend 20% higher to fit datalabels
+
   const chart = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { 
-        legend: { 
-          position: "bottom",
-          labels: {
-            boxWidth: 12,
-            padding: 20
-          }
-        }, 
-        tooltip: { mode: "index", intersect: false } 
+      layout: {
+        padding: { right: 60, top: 10 } // right padding for label space
       },
-      scales: { 
-        x: { stacked: true }, 
-        y: { 
-          stacked: true, 
-          beginAtZero: true, 
-          suggestedMax: paddedMax,
-          ticks: { 
-            stepSize: Math.max(1, Math.ceil(paddedMax / 20)),
-            callback: function(value) {
-              if (value % 1 === 0) {
-                return value;
-              }
-            }
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { boxWidth: 12, padding: 20 }
+        },
+        tooltip: { mode: "index", intersect: false },
+        datalabels: {
+          anchor: "end",
+          align: "end",
+          clamp: false,
+          clip: false, // allow outside plotting area
+          color: "#000",
+          font: { weight: "bold", size: 10 },
+          formatter: (value, context) => {
+            const index = context.dataIndex;
+            const total = context.chart.data.datasets.reduce(
+              (sum, ds) => sum + ds.data[index],
+              0
+            );
+            // Only show total on top bar
+            return context.datasetIndex === context.chart.data.datasets.length - 1
+              ? total
+              : "";
           }
-        } 
+        }
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          suggestedMax: paddedMax, // increase axis ceiling
+          ticks: {
+            stepSize: Math.max(1, Math.ceil(paddedMax / 20)),
+            callback: v => (v % 1 === 0 ? v : null)
+          }
+        }
+      },
+      elements: {
+        bar: {
+          borderSkipped: false,
+          borderRadius: 0,
+          clip: false // prevents cropping of tall bars
+        }
       },
       onClick: (evt, elements) => {
         if (!elements.length) return;
+
         const idx = elements[0].index;
         const label = chart.data.labels[idx];
-        // Filter records by clicked bar
+
+        // Get which fault types are currently checked for this chart
+        const selectedTypes = getSelectedFaults(chartId);
+
+        // Filter records by both label (Train/System/Month) and Fault type
         const records = window.failureData.filter(d => {
-          if(chartId.includes("Train")) return d.Train === label;
-          if(chartId.includes("System")) return d.System === label;
-          if(chartId.includes("Month")) return new Date(d.Period).toLocaleDateString("en-US", { month: "short", year: "2-digit" }) === label;
-          return false;
+          let matchLabel = false;
+          if (chartId.includes("Train")) matchLabel = d.Train === label;
+          else if (chartId.includes("System")) matchLabel = d.System === label;
+          else if (chartId.includes("Month")) {
+            const formatted = new Date(d.Period).toLocaleDateString("en-US", {
+              month: "short",
+              year: "2-digit"
+            });
+            matchLabel = formatted === label;
+          }
+          return matchLabel && selectedTypes.includes(d.Fault);
         });
+
         openRecordsModal(records);
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
+
   return chart;
 }
 
@@ -192,12 +228,19 @@ function updateCharts(data, selectedPeriod) {
   if(chartFailuresByTrain) chartFailuresByTrain.destroy();
   chartFailuresByTrain = createStackedChart(document.getElementById("failuresByTrain"), trainLabels, createFilteredDataset(trainLabels, trainData, selectedTrainFaults), "failuresByTrain");
 
-  // --- Failures by System ---
+  // --- Failures by System (sorted descending by total) ---
   const systemData = groupByType(filtered, "System");
-  const systemLabels = Object.keys(systemData);
+
+  // Compute totals for sorting
+  const sortedSystems = Object.keys(systemData).sort((a, b) => {
+    const totalA = Object.values(systemData[a]).reduce((sum, v) => sum + v, 0);
+    const totalB = Object.values(systemData[b]).reduce((sum, v) => sum + v, 0);
+    return totalB - totalA; // descending order
+  });
+
   const selectedSystemFaults = getSelectedFaults("failuresBySystem");
-  if(chartFailuresBySystem) chartFailuresBySystem.destroy();
-  chartFailuresBySystem = createStackedChart(document.getElementById("failuresBySystem"), systemLabels, createFilteredDataset(systemLabels, systemData, selectedSystemFaults), "failuresBySystem");
+  if (chartFailuresBySystem) chartFailuresBySystem.destroy();
+  chartFailuresBySystem = createStackedChart(document.getElementById("failuresBySystem"),sortedSystems,createFilteredDataset(sortedSystems, systemData, selectedSystemFaults),"failuresBySystem");
 
   // --- Failures by Month ---
   const monthData = groupByType(data, "Period");
@@ -220,13 +263,194 @@ function updateCharts(data, selectedPeriod) {
   document.getElementById("OmittedFailure").textContent = data.filter(d=>d.Fault==="Omitted").length;
 }
 
-// Checkbox filter listeners
-document.querySelectorAll(".faultFilter").forEach(cb=>{
-  cb.addEventListener("change",()=>{
-    const selectedPeriod = document.getElementById("periodFilter").value;
-    if(window.failureData) updateCharts(window.failureData, selectedPeriod);
+// Enhanced form validation
+// Enhanced form validation
+function validateForm(formData) {
+  const errors = [];
+  
+  // Required field validation
+  const requiredFields = ['Year', 'Period', 'Fault', 'Date', 'Train', 'System'];
+  requiredFields.forEach(field => {
+    if (!formData[field] || formData[field].trim() === '') {
+      errors.push(`${field} is required`);
+    }
   });
-});
+  
+  // Year validation
+  if (formData.Year && !/^\d{4}$/.test(formData.Year)) {
+    errors.push('Year must be a 4-digit number');
+  }
+  
+  // Period validation - more flexible
+  if (formData.Period) {
+    // Accept MMM-YY (Aug-24) or full dates that will be formatted by Apps Script
+    const periodRegex = /^[A-Za-z]{3}-\d{2}$/;
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    
+    if (!periodRegex.test(formData.Period) && !dateRegex.test(formData.Period)) {
+      errors.push('Period must be in MMM-YY format (e.g., Aug-24) or YYYY-MM-DD');
+    }
+  }
+  
+  // Date validation
+  if (formData.Date) {
+    const date = new Date(formData.Date);
+    if (isNaN(date.getTime())) {
+      errors.push('Date must be a valid date');
+    }
+  }
+  
+  return errors;
+}
+
+// Show form message
+function showFormMessage(message, type) {
+  const messageDiv = document.getElementById('formMessage');
+  messageDiv.innerHTML = message;
+  messageDiv.className = `form-message ${type}`;
+  messageDiv.style.display = 'block';
+  
+  // Auto-hide success messages after 5 seconds
+  if (type === 'success') {
+    setTimeout(() => {
+      messageDiv.style.display = 'none';
+    }, 5000);
+  }
+}
+
+// Auto-populate current date and period
+function autoPopulateCurrentDate() {
+  const now = new Date();
+  
+  // Set current date
+  const dateInput = document.querySelector('input[name="Date"]');
+  if (dateInput && !dateInput.value) {
+    dateInput.valueAsDate = now;
+  }
+  
+  // Set current year
+  const yearInput = document.querySelector('input[name="Year"]');
+  if (yearInput && !yearInput.value) {
+    yearInput.value = now.getFullYear().toString();
+  }
+  
+  // Set current period
+  const periodInput = document.querySelector('input[name="Period"]');
+  if (periodInput && !periodInput.value) {
+    const month = now.toLocaleString('en-US', { month: 'short' });
+    const year = now.getFullYear().toString().slice(-2);
+    periodInput.value = `${month}-${year}`;
+  }
+}
+
+// Export data functionality
+function exportToCSV(data, filename) {
+  if (!data.length) return;
+  
+  const headers = Object.keys(data[0]);
+  const csvContent = [
+    headers.join(','),
+    ...data.map(row => 
+      headers.map(header => {
+        const value = row[header] || '';
+        // Handle values that might contain commas
+        return `"${String(value).replace(/"/g, '""')}"`;
+      }).join(',')
+    )
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Add export button to the page
+function addExportButton() {
+  // Check if export button already exists
+  if (document.getElementById('exportBtn')) return;
+  
+  const exportBtn = document.createElement('button');
+  exportBtn.id = 'exportBtn';
+  exportBtn.className = 'btn btn-secondary';
+  exportBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
+  exportBtn.style.marginLeft = '10px';
+  
+  exportBtn.addEventListener('click', () => {
+    const selectedPeriod = document.getElementById('periodFilter').value;
+    const filteredData = selectedPeriod === 'all' 
+      ? window.failureData 
+      : window.failureData.filter(d => d.Period === selectedPeriod);
+    
+    const periodLabel = selectedPeriod === 'all' 
+      ? 'all_periods' 
+      : selectedPeriod.replace(/[^a-zA-Z0-9]/g, '_');
+    
+    exportToCSV(filteredData, `failure_data_${periodLabel}`);
+  });
+  
+  // Add the button next to the period filter
+  const filterSection = document.querySelector('.filter-section');
+  filterSection.appendChild(exportBtn);
+}
+
+// Enhanced modal with search
+function openRecordsModal(records, title = 'Records') {
+  currentRecords = records;
+  currentPage = 1;
+  
+  // Update modal title
+  document.querySelector('#recordsModal .dialog-message strong').textContent = title;
+  
+  renderRecordsTable();
+  document.getElementById("recordsModal").style.display = "flex";
+  
+  // Add search functionality if not already present
+  addSearchToModal();
+}
+
+function addSearchToModal() {
+  const modalContent = document.querySelector('#recordsModal .dialog-content');
+  
+  // Check if search already exists
+  if (document.getElementById('recordsSearch')) return;
+  
+  const searchDiv = document.createElement('div');
+  searchDiv.style.marginBottom = '10px';
+  searchDiv.innerHTML = `
+    <input type="text" id="recordsSearch" placeholder="Search records..." 
+           style="padding: 5px; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+  `;
+  
+  modalContent.insertBefore(searchDiv, document.getElementById('recordsTableContainer'));
+  
+  // Add search functionality
+  document.getElementById('recordsSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    if (searchTerm.trim() === '') {
+      renderRecordsTable();
+      return;
+    }
+    
+    const filteredRecords = currentRecords.filter(record => 
+      Object.values(record).some(value => 
+        String(value).toLowerCase().includes(searchTerm)
+      )
+    );
+    
+    // Create a temporary copy for pagination
+    const originalRecords = [...currentRecords];
+    currentRecords = filteredRecords;
+    currentPage = 1;
+    renderRecordsTable();
+    currentRecords = originalRecords;
+  });
+}
 
 // ---------------------- Modal & Pagination ----------------------
 let currentRecords = [];
@@ -234,15 +458,13 @@ let currentPage = 1;
 const firstPageRows = 10;
 const subsequentPageRows = 10;
 
-function openRecordsModal(records){
-  currentRecords = records;
-  currentPage = 1;
-  renderRecordsTable();
-  document.getElementById("recordsModal").style.display = "flex";
-}
-
 function closeRecordsModal(){
   document.getElementById("recordsModal").style.display = "none";
+  // Remove search input when closing modal
+  const searchInput = document.getElementById('recordsSearch');
+  if (searchInput) {
+    searchInput.remove();
+  }
 }
 
 function renderRecordsTable(){
@@ -251,8 +473,14 @@ function renderRecordsTable(){
   tbody.innerHTML = "";
   thead.innerHTML = "";
 
-  if(!currentRecords.length) return;
- // Get first 26 columns (A-Z) but skip column L (index 11)
+  if(!currentRecords.length) {
+    const noDataRow = document.createElement('tr');
+    noDataRow.innerHTML = `<td colspan="100" style="text-align: center; padding: 20px;">No records found</td>`;
+    tbody.appendChild(noDataRow);
+    return;
+  }
+
+  // Get first 26 columns (A-Z) but skip column L (index 11)
   const allColumns = Object.keys(currentRecords[0])
     .slice(0,26)
     .filter((col, idx) => idx !== 11);
@@ -301,45 +529,69 @@ function renderRecordsTable(){
 }
 
 // Pagination button listeners
-document.getElementById("prevPageBtn").onclick = () => { if(currentPage > 1){ currentPage--; renderRecordsTable(); }};
-document.getElementById("nextPageBtn").onclick = () => {
-  const totalPages = Math.ceil((currentRecords.length - firstPageRows) / subsequentPageRows + 1);
-  if(currentPage < totalPages){ currentPage++; renderRecordsTable(); }
+document.getElementById("prevPageBtn").onclick = () => { 
+  if(currentPage > 1){ 
+    currentPage--; 
+    renderRecordsTable(); 
+  }
 };
 
-// Close modal
-function closeRecordsModal(){
-  document.getElementById("recordsModal").style.display = "none";
-}
-
-// Pagination buttons
-document.getElementById("prevPageBtn").addEventListener("click", () => {
-  if(currentPage > 1){
-    currentPage--;
-    renderRecordsTable();
+document.getElementById("nextPageBtn").onclick = () => {
+  const totalPages = Math.ceil((currentRecords.length - firstPageRows) / subsequentPageRows + 1);
+  if(currentPage < totalPages){ 
+    currentPage++; 
+    renderRecordsTable(); 
   }
-});
-document.getElementById("nextPageBtn").addEventListener("click", () => {
-  const totalPages = Math.ceil((currentRecords.length - firstPageRows) / subsequentPageRows) + 1;
-  if(currentPage < totalPages){
-    currentPage++;
-    renderRecordsTable();
-  }
-});
+};
 
 // ---------------------- Initialize Dashboard ----------------------
+// Test function to verify Apps Script connection
+async function testAppsScriptConnection() {
+  try {
+    console.log('Testing connection to:', SCRIPT_URL);
+    
+    const response = await fetch(SCRIPT_URL);
+    const result = await response.json();
+    
+    console.log('GET test result:', result);
+    
+    if (result.success) {
+      console.log('✅ Apps Script GET is working correctly');
+      return true;
+    } else {
+      console.error('❌ Apps Script GET failed:', result.error);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Connection test failed:', error);
+    return false;
+  }
+}
+
+// Call this during initialization
 async function initDashboard(){
-  setUserInfo(); // Set user info on page load
+  setUserInfo();
   
   const overlay = document.getElementById("loadingOverlay");
   overlay.style.display="flex";
 
+  // Test connection first
+  const connectionOk = await testAppsScriptConnection();
+  if (!connectionOk) {
+    showFormMessage('Warning: Cannot connect to server. Data submission may not work.', 'error');
+  }
+
   const data = await fetchFailureData();
-  if(!data.length){ overlay.style.display="none"; return; }
+  if(!data.length){ 
+    overlay.style.display="none"; 
+    return; 
+  }
 
   window.failureData = data;
   populatePeriodFilter(data);
   updateCharts(data,"all");
+  
+  addExportButton();
 
   document.getElementById("periodFilter").addEventListener("change", e => {
     updateCharts(data, e.target.value);
@@ -348,23 +600,113 @@ async function initDashboard(){
   overlay.style.display="none";
 }
 
-// --- Apply modal function on summary cards ---
+// ---------------------- Event Listeners ----------------------
+
+// Checkbox filter listeners
+document.querySelectorAll(".faultFilter").forEach(cb=>{
+  cb.addEventListener("change",()=>{
+    const selectedPeriod = document.getElementById("periodFilter").value;
+    if(window.failureData) updateCharts(window.failureData, selectedPeriod);
+  });
+});
+
+// Tab switching functionality
+document.getElementById('tabInfo').addEventListener('click', function() {
+  this.classList.add('active');
+  document.getElementById('tabInput').classList.remove('active');
+  document.getElementById('dataInputSection').style.display = 'none';
+  // Show the charts and summary section
+  document.querySelector('.dashboard-stats').style.display = 'flex';
+  document.querySelectorAll('.card').forEach(card => card.style.display = 'block');
+});
+
+document.getElementById('tabInput').addEventListener('click', function() {
+  this.classList.add('active');
+  document.getElementById('tabInfo').classList.remove('active');
+  document.getElementById('dataInputSection').style.display = 'block';
+  // Hide the charts and summary section
+  document.querySelector('.dashboard-stats').style.display = 'none';
+  document.querySelectorAll('.card').forEach(card => card.style.display = 'none');
+  
+  // Auto-populate current date
+  autoPopulateCurrentDate();
+});
+
+// Enhanced form submission with better debugging
+document.getElementById('failureForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const form = e.target;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  
+  console.log('Form data to submit:', data); // Debug log
+  
+  // Validate form
+  const errors = validateForm(data);
+  if (errors.length > 0) {
+    showFormMessage(errors.join('<br>'), 'error');
+    return;
+  }
+  
+  // Show loading state
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Submitting...';
+  submitBtn.disabled = true;
+  
+  try {
+    console.log('Sending request to:', SCRIPT_URL); // Debug log
+    
+    const response = await fetch(SCRIPT_URL, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data)
+});
+    
+    console.log('Response status:', response.status); // Debug log
+    
+    const result = await response.json();
+    console.log('Response result:', result); // Debug log
+    
+    if (result.success) {
+      showFormMessage('Record submitted successfully!', 'success');
+      form.reset();
+      
+      // Refresh the charts with new data
+      setTimeout(() => {
+        initDashboard();
+      }, 1000);
+    } else {
+      showFormMessage(`Error: ${result.error || 'Unknown error occurred'}`, 'error');
+    }
+  } catch (error) {
+    console.error('Submission error:', error); // Debug log
+    showFormMessage(`Network error: ${error.message}`, 'error');
+  } finally {
+    // Restore button state
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+  }
+});
+
+// Apply modal function on summary cards
 document.getElementById("cardMajor").addEventListener("click", () => {
   const records = window.failureData.filter(d => d.Fault === "Major");
-  openRecordsModal(records);
+  openRecordsModal(records, "Major Failures");
 });
 
 document.getElementById("cardMinor").addEventListener("click", () => {
   const records = window.failureData.filter(d => d.Fault === "Minor");
-  openRecordsModal(records);
+  openRecordsModal(records, "Minor Failures");
 });
 
 document.getElementById("cardOmitted").addEventListener("click", () => {
   const records = window.failureData.filter(d => d.Fault === "Omitted");
-  openRecordsModal(records);
+  openRecordsModal(records, "Omitted Failures");
 });
 
-// --- Close modal when clicking outside content ---
+// Close modal when clicking outside content
 document.getElementById("recordsModal").addEventListener("click", (e) => {
   if (e.target === document.getElementById("recordsModal")) {
     closeRecordsModal();
