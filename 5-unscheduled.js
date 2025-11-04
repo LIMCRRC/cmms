@@ -1,10 +1,13 @@
 // unscheduled.js
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwNMI0o58DDVkFqhzTjtnfwp9Y8khc16vdE3k7jkbyCjfqwcLMl-rRXGzsA3hQTckIeRA/exec";
 
-// Show today’s date
+// Show today's date
 const date = new Date();
 document.getElementById("todayDate").textContent =
   `${date.getDate().toString().padStart(2, '0')}-${date.toLocaleString('en-US', { month: 'short' })}-${date.getFullYear()}`;
+
+// Register Chart.js plugins
+Chart.register(ChartDataLabels);
 
 let chartPriceByPeriod, chartCountByPeriod, chartByTrain, chartByItem;
 
@@ -81,6 +84,10 @@ function groupCount(arr, key) {
 }
 
 function createBarChart(ctx, labels, values, labelText, color = "#6F8FAF", filterKey = null) {
+  // Calculate padded max value for better label display
+  const maxValue = Math.max(...values);
+  const paddedMax = Math.ceil(maxValue * 1.2); // extend 20% higher to fit datalabels
+
   const chart = new Chart(ctx, {
     type: "bar",
     data: {
@@ -94,8 +101,38 @@ function createBarChart(ctx, labels, values, labelText, color = "#6F8FAF", filte
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } },
+      layout: {
+        padding: { right: 60, top: 10 } // right padding for label space
+      },
+      plugins: { 
+        legend: { display: false },
+        datalabels: {
+          anchor: "end",
+          align: "end",
+          clamp: false,
+          clip: false, // allow outside plotting area
+          color: "#000",
+          font: { weight: "bold", size: 10 },
+          formatter: (value) => value // Show the actual value on top of each bar
+        }
+      },
+      scales: { 
+        y: { 
+          beginAtZero: true,
+          suggestedMax: paddedMax, // increase axis ceiling
+          ticks: {
+            stepSize: Math.max(1, Math.ceil(paddedMax / 20)),
+            callback: v => (v % 1 === 0 ? v : null)
+          }
+        } 
+      },
+      elements: {
+        bar: {
+          borderSkipped: false,
+          borderRadius: 0,
+          clip: false // prevents cropping of tall bars
+        }
+      },
       onClick: (evt, elements) => {
         if (!elements.length) return;
         const idx = elements[0].index;
@@ -106,7 +143,8 @@ function createBarChart(ctx, labels, values, labelText, color = "#6F8FAF", filte
         }
         if (records.length) openRecordsModal(records);
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
   return chart;
 }
@@ -126,7 +164,7 @@ function updateDashboard(data) {
 
   // --- Price by Period ---
 const priceByPeriod = groupSum(data, "Period", d => parsePrice(d["Price"]));
-const periodLabels1 = sortPeriods(Object.keys(priceByPeriod)); // Changed this line
+const periodLabels1 = sortPeriods(Object.keys(priceByPeriod));
 if (chartPriceByPeriod) chartPriceByPeriod.destroy();
 chartPriceByPeriod = createBarChart(
   document.getElementById("priceByPeriod"),
@@ -139,7 +177,7 @@ chartPriceByPeriod = createBarChart(
 
 // --- Count by Period ---
 const countByPeriod = groupCount(data, "Period");
-const periodLabels2 = sortPeriods(Object.keys(countByPeriod)); // Changed this line
+const periodLabels2 = sortPeriods(Object.keys(countByPeriod));
 if (chartCountByPeriod) chartCountByPeriod.destroy();
 chartCountByPeriod = createBarChart(
   document.getElementById("countByPeriod"),
@@ -175,7 +213,7 @@ function populatePeriodFilterForItem(data) {
   const periodSet = [...new Set(data.map(d => d["Period"]))].filter(Boolean);
   const periodSel = document.getElementById("periodFilterItem");
   periodSel.innerHTML = '<option value="all">All</option>';
-  sortPeriods(periodSet).forEach(p => {  // Changed this line
+  sortPeriods(periodSet).forEach(p => {
     const opt = document.createElement("option");
     opt.value = p;
     opt.textContent = p;
